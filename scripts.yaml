@@ -29,20 +29,3 @@ study_light_off:
     data: {}
   mode: single
   icon: mdi:globe-light
-bedroom_lamp_on:
-  alias: Bedroom Lamp On
-  sequence:
-  - type: turn_on
-    device_id: 06f179132e1f17b3c768c2a5c9efb9ca
-    entity_id: 359cadfa34c8741e9513336e43dcbf1e
-    domain: light
-  mode: single
-bedroom_lamp_off:
-  alias: Bedroom Lamp Off
-  sequence:
-  - type: turn_off
-    device_id: 06f179132e1f17b3c768c2a5c9efb9ca
-    entity_id: 359cadfa34c8741e9513336e43dcbf1e
-    domain: light
-  mode: single
-
