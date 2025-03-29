@@ -1,0 +1,48 @@
+---
+# This file is used by the scripts editor
+# in the Home Assistant frontend.
+#
+# I personally do not use it, mainly because I like doing this in YAML.
+# However, from time to time, it is helpful to click a bit and see
+# what the frontend makes of it.
+#
+# This file must exist for the frontend scripts editor to work.
+# Hence, it is here, empty.
+#
+# If you are looking for my scripts: See scripts folder.
+study_light_on:
+  alias: Study Light On
+  sequence:
+  - service: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.shellyplus1_c82e180bc3d4_switch_0
+  mode: single
+  icon: mdi:globe-light
+study_light_off:
+  alias: Study Light Off
+  sequence:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.shellyplus1_c82e180bc3d4_switch_0
+    data: {}
+  mode: single
+  icon: mdi:globe-light
+bedroom_lamp_on:
+  alias: Bedroom Lamp On
+  sequence:
+  - type: turn_on
+    device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+    entity_id: 359cadfa34c8741e9513336e43dcbf1e
+    domain: light
+  mode: single
+bedroom_lamp_off:
+  alias: Bedroom Lamp Off
+  sequence:
+  - type: turn_off
+    device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+    entity_id: 359cadfa34c8741e9513336e43dcbf1e
+    domain: light
+  mode: single
+

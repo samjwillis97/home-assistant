@@ -1,0 +1,31 @@
+id: '1742125482782'
+alias: Bedroom Lamp Switch
+description: ''
+use_blueprint:
+  path: EPMatt/ikea_e1743.yaml
+  input:
+    integration: ZHA
+    controller_device: 91cf3416653ada66678a711fa944bab6
+    action_button_up_short:
+    - type: turn_on
+      device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+      entity_id: 359cadfa34c8741e9513336e43dcbf1e
+      domain: light
+    action_button_up_long:
+    - device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+      domain: light
+      entity_id: 359cadfa34c8741e9513336e43dcbf1e
+      type: brightness_increase
+    action_button_down_short:
+    - type: turn_off
+      device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+      entity_id: 359cadfa34c8741e9513336e43dcbf1e
+      domain: light
+    action_button_down_long:
+    - device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+      domain: light
+      entity_id: 359cadfa34c8741e9513336e43dcbf1e
+      type: brightness_decrease
+    helper_last_controller_event: input_text.bedroom_on_off_switch
+    button_up_long_loop: true
+    button_down_long_loop: true
