@@ -3,7 +3,7 @@ name: "Bedroom: Night"
 icon: mdi:weather-night
 entities:
   light.bedroom_lamp_light:
-    brightness: 35
+    brightness: 50
     state: "on"
   switch.bedroom_lights_switch:
     state: "off"
