@@ -1,0 +1,55 @@
+homeassistant: true
+mqtt:
+  server: mqtt://core-mosquitto:1883
+  user: addons
+  password: xu9Phai6aejai6laiy5ieVah2Uceitae9Aewie3ofiequo9mie5sailoGhoht2wa
+serial:
+  port: /dev/ttyUSB0
+frontend:
+  port: 8099
+advanced:
+  homeassistant_legacy_entity_attributes: false
+  legacy_api: false
+  legacy_availability_payload: false
+  log_level: debug
+device_options:
+  legacy: false
+devices:
+  '0x00158d0007e0ee68':
+    friendly_name: Bathroom Motion Detector
+    illuminance_precision: 1
+    device_temperature_precision: 1
+    no_occupancy_since:
+      - 300
+      - 900
+  '0x00158d0007ecb4de':
+    friendly_name: Kitchen Motion Detector
+    device_temperature_precision: 2
+    illuminance_precision: 1
+    illuminance_lux_precision: 1
+    homeassistant:
+      name: Bedroom Motion Detector
+    legacy: false
+    optimistic: true
+  '0xbc33acfffe15a44c':
+    friendly_name: Sam Bedside Switch
+  '0xbc33acfffe171537':
+    friendly_name: Maddy Bedside Switch
+  '0x842e14fffe8c29e0':
+    friendly_name: Maddy Bedside Lamp
+  '0xbc33acfffe953bdf':
+    friendly_name: Sam Bedside Lamp
+  '0x540f57fffe1930d5':
+    friendly_name: Dining Room Switch
+  '0x0c4314fffe014dba':
+    friendly_name: Dehumidifier Power
+  '0xb4e3f9fffefb7648':
+    friendly_name: WiFi Extender Power
+  '0x94deb8fffe726377':
+    friendly_name: Dining Room Light
+  '0x003c84fffe372f03':
+    friendly_name: Living Room Light
+  '0x540f57fffe19304f':
+    friendly_name: Living Room Switch
+  '0x94deb8fffec13383':
+    friendly_name: Lamp Lightbulb

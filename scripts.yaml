@@ -1,0 +1,19 @@
+study_light_on:
+  alias: Study Light On
+  sequence:
+  - service: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.shellyplus1_c82e180bc3d4_switch_0
+  mode: single
+  icon: mdi:globe-light
+study_light_off:
+  alias: Study Light Off
+  sequence:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.shellyplus1_c82e180bc3d4_switch_0
+    data: {}
+  mode: single
+  icon: mdi:globe-light

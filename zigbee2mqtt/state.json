@@ -1,0 +1,137 @@
+{
+    "0x00158d0007e0ee68": {
+        "occupancy": false,
+        "illuminance": 38,
+        "illuminance_lux": 38,
+        "linkquality": 99,
+        "voltage": 3045,
+        "battery": 100,
+        "device_temperature": 30,
+        "power_outage_count": 68
+    },
+    "0x00158d0007ecb4de": {
+        "occupancy": false,
+        "illuminance": 8,
+        "illuminance_lux": 8,
+        "linkquality": 114,
+        "voltage": 3045,
+        "battery": 100,
+        "device_temperature": 34,
+        "power_outage_count": 18
+    },
+    "0xbc33acfffe15a44c": {
+        "battery": 34,
+        "update": {
+            "state": "available",
+            "installed_version": 570492465,
+            "latest_version": 604241926
+        },
+        "linkquality": 30
+    },
+    "0xbc33acfffe171537": {
+        "battery": 47,
+        "linkquality": 105,
+        "update": {
+            "state": "available",
+            "installed_version": 570492465,
+            "latest_version": 604241926
+        }
+    },
+    "0xbc33acfffe953bdf": {
+        "state": "OFF",
+        "update": {
+            "state": "available",
+            "installed_version": 587531825,
+            "latest_version": 587806257
+        },
+        "linkquality": 39,
+        "brightness": 127,
+        "power_on_behavior": "previous"
+    },
+    "0x540f57fffe1930d5": {
+        "update": {
+            "state": "idle",
+            "installed_version": 65572,
+            "latest_version": 581
+        },
+        "battery": 100,
+        "linkquality": 48
+    },
+    "0x0c4314fffe014dba": {
+        "state": "OFF",
+        "update": {
+            "state": "available",
+            "installed_version": 537019939,
+            "latest_version": 587765297
+        },
+        "linkquality": 42
+    },
+    "0xb4e3f9fffefb7648": {
+        "state": "OFF",
+        "update": {
+            "state": "idle",
+            "installed_version": 587765297,
+            "latest_version": 587765297
+        },
+        "linkquality": 30
+    },
+    "0x94deb8fffe726377": {
+        "color_mode": "color_temp",
+        "power_on_behavior": "previous",
+        "brightness": 254,
+        "state": "ON",
+        "color_temp": 284,
+        "update": {
+            "state": "idle",
+            "installed_version": 65554,
+            "latest_version": 65554
+        },
+        "linkquality": 81,
+        "color_temp_startup": 284
+    },
+    "0x003c84fffe372f03": {
+        "color_mode": "color_temp",
+        "state": "ON",
+        "color_temp": 284,
+        "update": {
+            "state": "idle",
+            "installed_version": 65554,
+            "latest_version": 65554
+        },
+        "linkquality": 33,
+        "brightness": 254,
+        "color_temp_startup": 284,
+        "power_on_behavior": "previous"
+    },
+    "0x540f57fffe19304f": {
+        "battery": 100,
+        "linkquality": 90,
+        "update": {
+            "state": "idle",
+            "installed_version": 65572,
+            "latest_version": 581
+        }
+    },
+    "0x842e14fffe8c29e0": {
+        "state": "OFF",
+        "brightness": 127,
+        "linkquality": 51,
+        "update": {
+            "state": "idle",
+            "installed_version": 587806257,
+            "latest_version": 587806257
+        }
+    },
+    "0x94deb8fffec13383": {
+        "color_mode": "color_temp",
+        "update": {
+            "state": "idle",
+            "installed_version": 65554,
+            "latest_version": 65554
+        },
+        "linkquality": 105,
+        "state": "ON",
+        "color_temp": 334,
+        "brightness": 254
+    }
+}

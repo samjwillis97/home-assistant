@@ -1,0 +1,76 @@
+- id: '1706967247387'
+  alias: Living Room Remote Actions
+  description: ''
+  use_blueprint:
+    path: zha/ikea-4-button-remote.yaml
+    input:
+      remote: 0bcce5e44bede1b27d565eba97c2ac56
+      light:
+        device_id: 053681506073ed27b3b2f2e7a527532f
+      button_left_short:
+      - device_id: 053681506073ed27b3b2f2e7a527532f
+        domain: light
+        entity_id: 967b9bafea68cd88d52190907da8cce6
+        type: flash
+- id: '1710558233459'
+  alias: Study Switch
+  description: ''
+  use_blueprint:
+    path: EPMatt/ikea_e1743.yaml
+    input:
+      integration: ZHA
+      controller_device: 7b82711377bc14f56b57e69c5d16159f
+      helper_last_controller_event: input_text.sam_bedroom_switch
+      action_button_up_short:
+      - service: script.study_light_on
+        metadata: {}
+        data: {}
+      action_button_down_short:
+      - service: script.study_light_off
+        metadata: {}
+        data: {}
+- id: '1734868824566'
+  alias: Aircon off at 2AM
+  description: ''
+  trigger:
+  - platform: time
+    at: 02:00:00
+  condition: []
+  action:
+  - device_id: 5768ac591f9b7301e332aee6fd0ced51
+    domain: climate
+    entity_id: 5ea997dbcba3c274512f97da126fe49b
+    type: set_hvac_mode
+    hvac_mode: 'off'
+  mode: single
+- id: '1742125482782'
+  alias: Bedroom Lamp Switch
+  description: ''
+  use_blueprint:
+    path: EPMatt/ikea_e1743.yaml
+    input:
+      integration: ZHA
+      controller_device: 91cf3416653ada66678a711fa944bab6
+      action_button_up_short:
+      - type: turn_on
+        device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+        entity_id: 359cadfa34c8741e9513336e43dcbf1e
+        domain: light
+      action_button_up_long:
+      - device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+        domain: light
+        entity_id: 359cadfa34c8741e9513336e43dcbf1e
+        type: brightness_increase
+      action_button_down_short:
+      - type: turn_off
+        device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+        entity_id: 359cadfa34c8741e9513336e43dcbf1e
+        domain: light
+      action_button_down_long:
+      - device_id: 06f179132e1f17b3c768c2a5c9efb9ca
+        domain: light
+        entity_id: 359cadfa34c8741e9513336e43dcbf1e
+        type: brightness_decrease
+      helper_last_controller_event: input_text.bedroom_on_off_switch
+      button_up_long_loop: true
+      button_down_long_loop: true
