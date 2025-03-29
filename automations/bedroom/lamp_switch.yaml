@@ -7,25 +7,11 @@ use_blueprint:
     integration: ZHA
     controller_device: 91cf3416653ada66678a711fa944bab6
     action_button_up_short:
-    - type: turn_on
-      device_id: 06f179132e1f17b3c768c2a5c9efb9ca
-      entity_id: 359cadfa34c8741e9513336e43dcbf1e
-      domain: light
-    action_button_up_long:
-    - device_id: 06f179132e1f17b3c768c2a5c9efb9ca
-      domain: light
-      entity_id: 359cadfa34c8741e9513336e43dcbf1e
-      type: brightness_increase
+    - action: light.turn_on
+      target:
+        entity_id: light.bedroom_lamp_light
     action_button_down_short:
-    - type: turn_off
-      device_id: 06f179132e1f17b3c768c2a5c9efb9ca
-      entity_id: 359cadfa34c8741e9513336e43dcbf1e
-      domain: light
-    action_button_down_long:
-    - device_id: 06f179132e1f17b3c768c2a5c9efb9ca
-      domain: light
-      entity_id: 359cadfa34c8741e9513336e43dcbf1e
-      type: brightness_decrease
+    - action: light.turn_off
+      target:
+        entity_id: light.bedroom_lamp_light
     helper_last_controller_event: input_text.bedroom_on_off_switch
-    button_up_long_loop: true
-    button_down_long_loop: true
