@@ -19,13 +19,13 @@ triggers:
     event_type: zha_event
     event_data:
       device_id: 91cf3416653ada66678a711fa944bab6
-      command: on
+      command: "on"
 
   - platform: event
     event_type: zha_event
     event_data:
       device_id: 91cf3416653ada66678a711fa944bab6
-      command: off
+      command: "off"
 
 variables:
   anchors:
