@@ -3,4 +3,5 @@ input_boolean:
     name: Living Room Camera State
 
 shell_command:
-  turn_off_living_room_camera: "curl http://localhost:5000/api/living-room-cam/power/off"
+  turn_on_living_room_camera: curl http://localhost:5000/api/living-room-cam/power/on
+  turn_off_living_room_camera: curl http://localhost:5000/api/living-room-cam/power/off
