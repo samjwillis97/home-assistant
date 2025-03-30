@@ -1,0 +1,8 @@
+id: 'd06b79e2-080d-4388-8e22-7e8ec849c3a0'
+alias: "Living Room: Camera remote off"
+triggers:
+  - trigger: state
+    entity_id: input_boolean.living_room_camera_state
+    to: "off"
+actions:
+  - action: shell_command.turn_off_living_room_camera
