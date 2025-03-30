@@ -63,7 +63,7 @@ action:
         - *turn_on
 
     - alias: "Turn off when off button pressed"
-      coonditions: '{{ trigger.event.data.command == "off" }}'
+      conditions: '{{ trigger.event.data.command == "off" }}'
       sequence: 
         - *turn_off
 
