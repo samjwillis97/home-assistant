@@ -18,8 +18,8 @@ variables:
       alias: "Turn on the camera"
       service: shell_command.turn_on_living_room_camera
 
-actions:
-  -choose:
+action:
+  - choose:
     - alias: "Turn on when away mode is active"
       conditions:
         entity_id:
@@ -29,3 +29,6 @@ actions:
 
       sequence: 
         - *turn_on
+
+    default:
+      - *turn_on
