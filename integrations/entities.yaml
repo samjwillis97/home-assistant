@@ -1,3 +1,5 @@
+# TODO: Workout how to break these out better
+
 input_boolean:
   living_room_camera_state:
     name: Living Room Camera State
