@@ -1,8 +1,31 @@
 id: '9e39e652-c9d4-4490-9382-b5e9eecbb06e'
 alias: "Living Room: Camera remote on"
+mode: queued
+
 triggers:
   - trigger: state
     entity_id: input_boolean.living_room_camera_state
     to: "on"
+
+  - platform: state
+    entity_id:
+      - input_boolean.house_mode_away
+    from: ~
+
+variables:
+  anchors:
+    - &turn_on
+      alias: "Turn on the camera"
+      service: shell_command.turn_on_living_room_camera
+
 actions:
-  - action: shell_command.turn_on_living_room_camera
+  -choose:
+    - alias: "Turn on when away mode is active"
+      conditions:
+        entity_id:
+          - input_boolean.house_mode_away
+        match: any
+        state: "on"
+
+      sequence: 
+        - *turn_on

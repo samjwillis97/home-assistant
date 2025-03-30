@@ -1,6 +1,8 @@
 # TODO: Workout how to break these out better
 
 input_boolean:
+  house_mode_away:
+    name: House Mode Away
   living_room_camera_state:
     name: Living Room Camera State
 
