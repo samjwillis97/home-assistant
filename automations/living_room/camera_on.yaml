@@ -22,10 +22,11 @@ action:
   - choose:
     - alias: "Turn on when away mode is active"
       conditions:
-        entity_id:
-          - input_boolean.house_mode_away
-        match: any
-        state: "on"
+        - condition: state
+          entity_id:
+            - input_boolean.house_mode_away
+          match: any
+          state: "on"
 
       sequence: 
         - *turn_on
