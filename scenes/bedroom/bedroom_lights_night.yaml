@@ -1,10 +1,6 @@
 id: "982aebc3-c871-40a2-a10a-1d164fd7bd85"
-name: "Bedroom: Night"
+name: "Bedroom Lights: Night"
 icon: mdi:weather-night
 entities:
-  light.bedroom_lamp_light:
-    brightness: 35
-    color_mode: "brightness"
-    state: "on"
   switch.bedroom_lights_switch:
     state: "off"

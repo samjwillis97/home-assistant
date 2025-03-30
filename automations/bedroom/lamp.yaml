@@ -1,0 +1,71 @@
+# NOTE
+# When on button is pressed, turn bed
+id: '5ab5f017-59db-4c84-a097-0bfc848cee96'
+alias: "Bedroom Lamp"
+mode: queued
+trace:
+  stored_traces: 25
+
+triggers:
+  # - platform: homeassistant
+  #   event: start
+  #
+  # - platform: event
+  #   event_type:
+  #     - automation_reloaded
+  #     - scene_reloaded
+
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: 91cf3416653ada66678a711fa944bab6
+      command: on
+
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: 91cf3416653ada66678a711fa944bab6
+      command: off
+
+variables:
+  anchors:
+    - &turn_off
+      alias: "Turn off lamp"
+      service: light.turn_off
+      target:
+        entity_id: light.bedroom_lamp_light
+
+    - &turn_on
+      alias: "Turn on lamp"
+      service: light.turn_on
+      target:
+        entity_id: light.bedroom_lamp_light
+
+    # - &choose_scene
+    #   choose:
+    #     - alias: "Activate bedroom lamp night scene in night mode"
+    #       conditions:
+    #         - alias: "When house is in night mode"
+    #           condition: state
+    #           entity_id: input_boolean.house_mode_night
+    #           state: "on"
+    #       sequence:
+    #         - alias: "Activate bedroom lamp night scene"
+    #           <<: *scene
+    #           target:
+    #             entity_id: scene.bedroom_lamp_night
+
+action:
+  - choose:
+    - alias: "Turn on when on button pressed"
+      conditions: '{{ trigger.event.data.command == "on" }}'
+      sequence: 
+        - *turn_on
+
+    - alias: "Turn off when off button pressed"
+      coonditions: '{{ trigger.event.data.command == "off" }}'
+      sequence: 
+        - *turn_off
+
+    default:
+      - *turn_off

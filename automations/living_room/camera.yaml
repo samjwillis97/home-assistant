@@ -7,6 +7,13 @@ trace:
   stored_traces: 25
 
 triggers:
+  - platform: homeassistant
+    event: start
+
+  - platform: event
+    event_type:
+      - automation_reloaded
+
   - trigger: state
     entity_id: input_boolean.living_room_camera_state
     to: "on"
