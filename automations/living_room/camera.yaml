@@ -1,11 +1,17 @@
 id: '9e39e652-c9d4-4490-9382-b5e9eecbb06e'
-alias: "Living Room: Camera remote on"
+alias: "Living Room Camera"
 mode: queued
+trace:
+  stored_traces: 25
 
 triggers:
   - trigger: state
     entity_id: input_boolean.living_room_camera_state
     to: "on"
+
+  - trigger: state
+    entity_id: input_boolean.living_room_camera_state
+    to: "off"
 
   - platform: state
     entity_id:
@@ -17,6 +23,10 @@ variables:
     - &turn_on
       alias: "Turn on the camera"
       service: shell_command.turn_on_living_room_camera
+
+    - &turn_off
+      alias: "Turn off the camera"
+      service: shell_command.turn_off_living_room_camera
 
 action:
   - choose:
@@ -31,5 +41,16 @@ action:
       sequence: 
         - *turn_on
 
+    - alias: "Turn on when input switched"
+      conditions:
+        - condition: state
+          entity_id:
+            - input_boolean.living_room_camera_state
+          match: any
+          state: "on"
+
+      sequence: 
+        - *turn_on
+
     default:
-      - *turn_on
+      - *turn_off
