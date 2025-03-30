@@ -1,3 +1,5 @@
+# NOTE: current limitation is that you can't turn off camera if house away is enabled
+#
 id: '9e39e652-c9d4-4490-9382-b5e9eecbb06e'
 alias: "Living Room Camera"
 mode: queued
