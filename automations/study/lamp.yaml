@@ -28,6 +28,10 @@ triggers:
     for:
       minutes: 30
 
+  - trigger: numeric_state
+    entity_id: sensor.study_motion_sensor_illuminance
+    below: 25
+
 variables:
   anchors:
     - &turn_on
@@ -55,7 +59,7 @@ action:
               state: "on"
         - condition: numeric_state
           entity_id: sensor.study_motion_sensor_illuminance
-          below: 10
+          below: 25
 
       sequence:
         - *turn_on
