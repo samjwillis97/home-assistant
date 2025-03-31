@@ -13,6 +13,11 @@ triggers:
       - automation_reloaded
 
   - trigger: state
+    id: "motion-detected"
+    entity_id: binary_sensor.study_motion_sensor_motion
+    to: "on"
+
+  - trigger: state
     entity_id: binary_sensor.study_motion_sensor_occupancy
     from: ~
 
@@ -34,12 +39,15 @@ action:
   - choose:
     - alias: "Turn on when room occupied and low light level"
       conditions:
-        - condition: state
-          entity_id: binary_sensor.study_motion_sensor_occupancy
-          state: "on"
+        - OR:
+          - condition: trigger
+            id: motion-detected
+          - condition: state
+            entity_id: binary_sensor.study_motion_sensor_occupancy
+            state: "on"
         - condition: numeric_state
           entity_id: sensor.study_motion_sensor_illuminance
-          below: 5
+          below: 10
 
       sequence:
         - *turn_on
