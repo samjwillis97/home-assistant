@@ -54,6 +54,3 @@ action:
 
       sequence:
         - *turn_off
-
-    default:
-      - *turn_off
