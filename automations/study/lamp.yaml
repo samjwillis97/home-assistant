@@ -21,6 +21,13 @@ triggers:
     entity_id: binary_sensor.study_motion_sensor_occupancy
     from: ~
 
+  - trigger: state
+    id: "room-clear"
+    entity_id: binary_sensor.study_motion_sensor_occupancy
+    to: "off"
+    for:
+      minutes: 30
+
 variables:
   anchors:
     - &turn_on
@@ -39,12 +46,13 @@ action:
   - choose:
     - alias: "Turn on when room occupied and low light level"
       conditions:
-        - OR:
-          - condition: trigger
-            id: motion-detected
-          - condition: state
-            entity_id: binary_sensor.study_motion_sensor_occupancy
-            state: "on"
+        - alias: "Motion detected or room occupied"
+          or:
+            - condition: trigger
+              id: "motion-detected"
+            - condition: state
+              entity_id: binary_sensor.study_motion_sensor_occupancy
+              state: "on"
         - condition: numeric_state
           entity_id: sensor.study_motion_sensor_illuminance
           below: 10
@@ -54,11 +62,14 @@ action:
 
     - alias: "Turn off when room empty"
       conditions:
-        - condition: state
-          entity_id: binary_sensor.study_motion_sensor_occupancy
-          state: "off"
-          for:
-            hours: 1
+        - or:
+          - condition: trigger
+            id: "room-clear"
+          - condition: state
+            entity_id: binary_sensor.study_motion_sensor_occupancy
+            state: "off"
+            for: 
+              minutes: 30
 
       sequence:
         - *turn_off
