@@ -1,0 +1,51 @@
+id: "a9831ca7-3357-48bb-a066-3a226843530f"
+alias: "Study: Lamp"
+mode: queued
+trace:
+  stored_traces: 25
+
+triggers:
+  - platform: homeassistant
+    event: start
+
+  - platform: event
+    event_type:
+      - automation_reloaded
+
+  - trigger: state
+    entity_id: binary_sensor.study_motion_sensor_occupancy
+    from: ~
+
+variables:
+  anchors:
+    - &turn_on
+      alias: "Turn on lamp"
+
+    - &turn_off
+      alias: "Turn off lamp"
+
+action:
+  - choose:
+    - alias: "Turn on when room occupied and low light level"
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.study_motion_sensor_occupancy
+          state: "on"
+        - condition: numeric_state
+          entity_id: sensor.study_motion_sensor_illuminance
+          below: 5
+
+      sequence:
+        - *turn_on
+
+    - alias: "Turn off when room empty"
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.study_motion_sensor_occupancy
+          state: "off"
+
+      sequence:
+        - *turn_off
+
+    default:
+      - *turn_off
