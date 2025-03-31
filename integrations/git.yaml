@@ -1,0 +1,12 @@
+git_pull:
+  repository: "https://github.com/samjwillis97/home-assistant.git"
+  git_remote: origin
+  git_branch: main
+  git_command: pull
+  git_prune: "false"
+  auto_restart: true
+  restart_ignore:
+    - ".gitignore"
+  repeat:
+    active: false
+    interval: 300
