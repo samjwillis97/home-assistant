@@ -20,9 +20,15 @@ variables:
   anchors:
     - &turn_on
       alias: "Turn on lamp"
+      service: light.turn_on
+      target:
+        entity_id: light.study_lamp_light
 
     - &turn_off
       alias: "Turn off lamp"
+      service: light.turn_off
+      target:
+        entity_id: light.study_lamp_light
 
 action:
   - choose:
