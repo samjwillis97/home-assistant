@@ -1,4 +1,3 @@
 - light.living_room_lamp
 - climate.living_room_aircon
-- camera.living_room
 - input_boolean.living_room_camera_state
