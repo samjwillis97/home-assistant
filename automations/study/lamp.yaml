@@ -49,6 +49,8 @@ action:
         - condition: state
           entity_id: binary_sensor.study_motion_sensor_occupancy
           state: "off"
+          for:
+            hours: 1
 
       sequence:
         - *turn_off
