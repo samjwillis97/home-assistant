@@ -15,13 +15,15 @@ triggers:
   #     - automation_reloaded
   #     - scene_reloaded
 
-  - platform: event
+  - id: "switch-on"
+    platform: event
     event_type: zha_event
     event_data:
       device_id: 91cf3416653ada66678a711fa944bab6
       command: "on"
 
-  - platform: event
+  - id: "switch-off"
+    platform: event
     event_type: zha_event
     event_data:
       device_id: 91cf3416653ada66678a711fa944bab6
@@ -58,12 +60,14 @@ variables:
 action:
   - choose:
     - alias: "Turn on when on button pressed"
-      conditions: '{{ trigger.event.data.command == "on" }}'
+      condition: trigger
+      id: switch-on
       sequence: 
         - *turn_on
 
     - alias: "Turn off when off button pressed"
-      conditions: '{{ trigger.event.data.command == "off" }}'
+      condition: trigger
+      id: switch-off
       sequence: 
         - *turn_off
 
