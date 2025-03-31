@@ -60,15 +60,19 @@ variables:
 action:
   - choose:
     - alias: "Turn on when on button pressed"
-      condition: trigger
-      id: switch-on
-      sequence: 
+      conditions:
+        - condition: trigger
+          id: switch-on
+
+      sequence:
         - *turn_on
 
     - alias: "Turn off when off button pressed"
-      condition: trigger
-      id: switch-off
-      sequence: 
+      conditions:
+        - condition: trigger
+          id: switch-off
+
+      sequence:
         - *turn_off
 
     default:
