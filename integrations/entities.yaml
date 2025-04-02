@@ -9,3 +9,4 @@ input_boolean:
 shell_command:
   turn_on_living_room_camera: curl http://localhost:5000/api/living-room-cam/power/on
   turn_off_living_room_camera: curl http://localhost:5000/api/living-room-cam/power/off
+  get_living_room_camera_power_status: curl http://localhost:5000/api/living-room-cam/power

@@ -15,20 +15,30 @@ triggers:
       - automation_reloaded
 
   - trigger: state
+    id: "turn-on"
     entity_id: input_boolean.living_room_camera_state
     to: "on"
 
   - trigger: state
+    id: "turn-off"
     entity_id: input_boolean.living_room_camera_state
     to: "off"
 
   - platform: state
+    id: "turn-on"
     entity_id:
       - input_boolean.house_mode_away
-    from: ~
+    to: "on"
+
+  - platform: state
+    id: "turn-off"
+    entity_id:
+      - input_boolean.house_mode_away
+    to: "off"
 
 variables:
   anchors:
+    # TODO: Sync state step on 30s delay after action?
     - &turn_on
       alias: "Turn on the camera"
       service: shell_command.turn_on_living_room_camera
@@ -37,29 +47,35 @@ variables:
       alias: "Turn off the camera"
       service: shell_command.turn_off_living_room_camera
 
+    - &sync_state
+      alias: "Sync with Wyze state"
+      sequence:
+        - service: shell_command.get_living_room_camera_power_status
+          response_variable: status
+        - data:
+            title: DEBUG
+            message: "{{ status.value }}"
+          action: notify.mobile_app_sam_phone
+
 action:
   - choose:
-    - alias: "Turn on when away mode is active"
+    - alias: "Turn on when away mode activated or turned on"
       conditions:
-        - condition: state
-          entity_id:
-            - input_boolean.house_mode_away
-          match: any
-          state: "on"
+        - or:
+          - condition: trigger
+            id: "turn-on"
 
-      sequence: 
+      sequence:
         - *turn_on
 
-    - alias: "Turn on when input switched"
+    - alias: "Turn off when away mode de-activated or turned off"
       conditions:
-        - condition: state
-          entity_id:
-            - input_boolean.living_room_camera_state
-          match: any
-          state: "on"
+        - or:
+          - condition: trigger
+            id: "turn-off"
 
-      sequence: 
-        - *turn_on
+      sequence:
+        - *turn_off
 
     default:
-      - *turn_off
+      - *sync_state
