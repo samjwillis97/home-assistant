@@ -1,0 +1,6 @@
+platform: rest
+name: "Living Room Cam Power"
+method: GET
+resource: http://localhost:5000/api/living-room-cam/power
+scan_interval: 60
+value_template: "{{ value_json.value }}"
