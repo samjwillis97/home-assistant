@@ -116,10 +116,26 @@ action:
       sequence:
         - *turn_off
 
-    - alias: "Synchronize with wyze"
+    - alias: "Synchronize with wyze - on"
       conditions:
-        - condition: trigger
-          id: "wyze-change"
+        - and:
+          - condition: trigger
+            id: "wyze-change"
+          - condition: state
+            state: "on"
+            entity_id: "sensor.living_room_cam_power"
 
       sequence:
-        - "*turn_{{ sensor.living_room_cam_power }}"
+        - *sync_on"
+
+    - alias: "Synchronize with wyze - off"
+      conditions:
+        - and:
+          - condition: trigger
+            id: "wyze-change"
+          - condition: state
+            state: "off"
+            entity_id: "sensor.living_room_cam_power"
+
+      sequence:
+        - *sync_off"
