@@ -1,5 +1,4 @@
 # NOTE: current limitation is that you can't turn off camera if house away is enabled
-#
 id: '9e39e652-c9d4-4490-9382-b5e9eecbb06e'
 alias: "Living Room Camera"
 mode: queued
@@ -7,12 +6,12 @@ trace:
   stored_traces: 25
 
 triggers:
-  - platform: homeassistant
-    event: start
+  # - platform: homeassistant
+  #   event: start
 
-  - platform: event
-    event_type:
-      - automation_reloaded
+  # - platform: event
+  #   event_type:
+  #     - automation_reloaded
 
   - trigger: state
     id: "turn-on"
@@ -47,15 +46,15 @@ variables:
       alias: "Turn off the camera"
       service: shell_command.turn_off_living_room_camera
 
-    - &sync_state
-      alias: "Sync with Wyze state"
-      sequence:
-        - service: shell_command.get_living_room_camera_power_status
-          response_variable: result
-        - data:
-            title: DEBUG
-            message: {{ result.value }}
-          action: notify.mobile_app_sam_phone
+        # - &sync_state
+        #   alias: "Sync with Wyze state"
+        #   sequence:
+        #     - service: shell_command.get_living_room_camera_power_status
+        #       response_variable: result
+        #     - data:
+        #         title: DEBUG
+        #         message: "{{ result['stdout'] }}"
+        #       action: notify.mobile_app_sam_phone
 
 action:
   - choose:
@@ -77,5 +76,5 @@ action:
       sequence:
         - *turn_off
 
-    default:
-      - *sync_state
+          # default:
+          # - *sync_state
