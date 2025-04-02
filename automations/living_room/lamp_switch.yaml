@@ -1,5 +1,5 @@
 id: '1706967247387'
-alias: Living Room Remote Actions
+alias: "Living Room: Lamp"
 description: ''
 use_blueprint:
   path: zha/ikea-4-button-remote.yaml

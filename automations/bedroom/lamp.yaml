@@ -1,7 +1,7 @@
 # NOTE
 # When on button is pressed, turn bed
 id: '5ab5f017-59db-4c84-a097-0bfc848cee96'
-alias: "Bedroom Lamp"
+alias: "Bedroom: Lamp"
 mode: queued
 trace:
   stored_traces: 25
