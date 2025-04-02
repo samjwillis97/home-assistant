@@ -1,6 +1,9 @@
 id: '1734868824566'
 alias: Aircon off at 2AM
-description: ''
+description: >-
+  Controls the aircon in the living room
+
+  Turns it off every night at 2AM incase it was forgotten
 trigger:
 - platform: time
   at: 02:00:00

@@ -1,5 +1,11 @@
 id: "a9831ca7-3357-48bb-a066-3a226843530f"
 alias: "Study: Lamp"
+description: >-
+  Controls the study lamp.
+
+  When motion is detected and the light level is low it will turn it on.
+
+  It will then turn it off once the room has been cleared for 30 minutes.
 mode: queued
 trace:
   stored_traces: 25

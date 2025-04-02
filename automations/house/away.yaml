@@ -1,6 +1,8 @@
 id: '94bea6be-6520-4227-b451-fee4d95df21f'
 alias: "House: Away"
-# This is pretty much only required to turn off the input_boolean for camera power..
+description: >-
+  This is pretty much only required to turn off the input_boolean for living room camera state
+  due to how this operates
 mode: queued
 trace:
   stored_traces: 25
