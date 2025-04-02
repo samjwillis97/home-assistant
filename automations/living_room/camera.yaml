@@ -1,17 +1,17 @@
 # NOTE: current limitation is that you can't turn off camera if house away is enabled
 id: '9e39e652-c9d4-4490-9382-b5e9eecbb06e'
-alias: "Living Room Camera"
+alias: "Living Room: Camera"
 mode: queued
 trace:
   stored_traces: 25
 
 triggers:
-  # - platform: homeassistant
-  #   event: start
+  - platform: homeassistant
+    event: start
 
-  # - platform: event
-  #   event_type:
-  #     - automation_reloaded
+  - platform: event
+    event_type:
+      - automation_reloaded
 
   - trigger: state
     id: "turn-on"
@@ -34,10 +34,15 @@ triggers:
     entity_id:
       - input_boolean.house_mode_away
     to: "off"
+
+  - platform: state
+    id: "wyze-change"
+    entity_id:
+      - sensor.living_room_cam_power
+    from: ~
 
 variables:
   anchors:
-    # TODO: Sync state step on 30s delay after action?
     - &turn_on
       alias: "Turn on the camera"
       service: shell_command.turn_on_living_room_camera
@@ -46,15 +51,32 @@ variables:
       alias: "Turn off the camera"
       service: shell_command.turn_off_living_room_camera
 
-        # - &sync_state
-        #   alias: "Sync with Wyze state"
-        #   sequence:
-        #     - service: shell_command.get_living_room_camera_power_status
-        #       response_variable: result
-        #     - data:
-        #         title: DEBUG
-        #         message: "{{ result['stdout'] }}"
-        #       action: notify.mobile_app_sam_phone
+    - &sync_on
+      alias: Synchronize state to on
+      sequence:
+        - service: automation.turn_off
+          target:
+            entity_id: automation.living_room_camera_remote_on
+        - service: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.living_room_camera_state
+        - service: automation.turn_on
+          target:
+            entity_id: automation.living_room_camera_remote_on
+
+    - &sync_off
+      alias: Synchronize state to off
+      sequence:
+        - service: automation.turn_off
+          target:
+            entity_id: automation.living_room_camera_remote_on
+        - service: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.living_room_camera_state
+        - service: automation.turn_on
+          target:
+            entity_id: automation.living_room_camera_remote_on
+
 
 action:
   - choose:
@@ -76,5 +98,28 @@ action:
       sequence:
         - *turn_off
 
-          # default:
-          # - *sync_state
+    - alias: "Synchronize with house mode - turn on"
+      conditions:
+        - condition: state
+          entity_id: input_boolean.house_mode_away
+          state: "on"
+
+      sequence:
+        - *turn_on
+
+    - alias: "Synchronize with house mode - turn off"
+      conditions:
+        - condition: state
+          entity_id: input_boolean.house_mode_away
+          state: "off"
+
+      sequence:
+        - *turn_off
+
+    - alias: "Synchronize with wyze"
+      conditions:
+        - condition: trigger
+          id: "wyze-change"
+
+      sequence:
+        - "*turn_{{ sensor.living_room_cam_power }}"
