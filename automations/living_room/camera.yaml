@@ -17,6 +17,11 @@ triggers:
     entity_id: input_boolean.living_room_camera_state
     from: ~
 
+  - trigger: state
+    id: wyze-change
+    entity_id: sensor.living_room_cam_power
+    from: ~
+
 variables:
   anchors:
     - &turn_on
@@ -27,35 +32,46 @@ variables:
       alias: "Turn off the camera"
       service: shell_command.turn_off_living_room_camera
 
-    # - &sync_on
-    #   alias: Synchronize state to on
-    #   sequence:
-    #     - service: automation.turn_off
-    #       target:
-    #         entity_id: automation.living_room_camera_remote_on
-    #     - service: input_boolean.turn_on
-    #       target:
-    #         entity_id: input_boolean.living_room_camera_state
-    #     - service: automation.turn_on
-    #       target:
-    #         entity_id: automation.living_room_camera_remote_on
-    #
-    # - &sync_off
-    #   alias: Synchronize state to off
-    #   sequence:
-    #     - service: automation.turn_off
-    #       target:
-    #         entity_id: automation.living_room_camera_remote_on
-    #     - service: input_boolean.turn_off
-    #       target:
-    #         entity_id: input_boolean.living_room_camera_state
-    #     - service: automation.turn_on
-    #       target:
-    #         entity_id: automation.living_room_camera_remote_on
+    - &sync_on
+      alias: Synchronize state to on
+      sequence:
+        - service: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.living_room_camera_state
 
+    - &sync_off
+      alias: Synchronize state to off
+      sequence:
+        - service: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.living_room_camera_state
 
 action:
   - choose:
+    - alias: "Synchronize with wyze - on"
+      conditions:
+        - and:
+          - condition: trigger
+            id: "wyze-change"
+          - condition: state
+            state: "on"
+            entity_id: "sensor.living_room_cam_power"
+
+      sequence:
+        - *sync_on
+
+    - alias: "Synchronize with wyze - off"
+      conditions:
+        - and:
+          - condition: trigger
+            id: "wyze-change"
+          - condition: state
+            state: "off"
+            entity_id: "sensor.living_room_cam_power"
+
+      sequence:
+        - *sync_off
+
     - alias: "Input boolean turned on"
       conditions:
         - condition: state
@@ -73,27 +89,3 @@ action:
 
       sequence:
         - *turn_off
-
-    # - alias: "Synchronize with wyze - on"
-    #   conditions:
-    #     - and:
-    #       - condition: trigger
-    #         id: "wyze-change"
-    #       - condition: state
-    #         state: "on"
-    #         entity_id: "sensor.living_room_cam_power"
-    #
-    #   sequence:
-    #     - *sync_on
-    #
-    # - alias: "Synchronize with wyze - off"
-    #   conditions:
-    #     - and:
-    #       - condition: trigger
-    #         id: "wyze-change"
-    #       - condition: state
-    #         state: "off"
-    #         entity_id: "sensor.living_room_cam_power"
-    #
-    #   sequence:
-    #     - *sync_off
