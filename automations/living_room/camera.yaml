@@ -51,10 +51,10 @@ variables:
       alias: "Sync with Wyze state"
       sequence:
         - service: shell_command.get_living_room_camera_power_status
-          response_variable: status
+          response_variable: result
         - data:
             title: DEBUG
-            message: "{{ status.value }}"
+            message: {{ result.value }}
           action: notify.mobile_app_sam_phone
 
 action:
