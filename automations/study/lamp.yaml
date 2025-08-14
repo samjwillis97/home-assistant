@@ -44,13 +44,13 @@ variables:
       alias: "Turn on lamp"
       service: light.turn_on
       target:
-        entity_id: light.study_lamp_light
+        entity_id: light.study_lamp
 
     - &turn_off
       alias: "Turn off lamp"
       service: light.turn_off
       target:
-        entity_id: light.study_lamp_light
+        entity_id: light.study_lamp
 
 action:
   - choose:
