@@ -7,6 +7,7 @@ from shazamio import Shazam
 import asyncio
 import wave
 from collections import deque
+import aiohttp
 
 # ---------------- AUDIO SETUP
 RATE = 44800
@@ -32,7 +33,7 @@ FREQ_RESOLUTION = RATE / CHUNK
 
 # ---------------- SHAZAM
 SAMPLE_LENGTH = 10  # Seconds
-SHAZAM_INTERVAL = 10  # How often to identify songs (seconds)
+SHAZAM_INTERVAL = 30  # How often to identify songs (seconds)
 
 # Shared audio buffer
 chunks_needed = int(RATE / CHUNK * SAMPLE_LENGTH)
@@ -93,6 +94,37 @@ async def identify_song(audio_frames, filename='temp_audio.wav'):
     return result
 
 
+async def get_track_duration_musicbrainz(title, artist):
+    """Get track duration from MusicBrainz API"""
+    try:
+        # Build search query
+        query = f'recording:"{title}" AND artist:"{artist}"'
+        url = "https://musicbrainz.org/ws/2/recording/"
+        params = {
+            'query': query,
+            'fmt': 'json',
+            'limit': 1
+        }
+        headers = {
+            'User-Agent': 'RaspberryPiMusicListener/0.1 (sam@williscloud.org)'
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('recordings') and len(data['recordings']) > 0:
+                        recording = data['recordings'][0]
+                        # Duration is in milliseconds
+                        duration_ms = recording.get('length')
+                        if duration_ms:
+                            return duration_ms / 1000  # Convert to seconds
+        return None
+    except Exception as e:
+        print(f"Error fetching duration from MusicBrainz: {e}")
+        return None
+
+
 async def visualization_task():
     """Continuously visualize audio and populate the buffer"""
     band_values = np.zeros(9)
@@ -145,23 +177,41 @@ async def shazam_task():
             audio_frames = list(audio_buffer)
             result = await identify_song(audio_frames)
 
-            if result.get('matches'):
-                match = result['matches'][0]
-                if match.get('offset'):
-                    print(
-                        f"♪ Currently {match['offset']}s through song")
+            # Extract offset from matches
+            offset = None
+            if result.get('matches') and len(result['matches']) > 0:
+                offset = result['matches'][0].get('offset')
 
             if result.get('track'):
                 track = result['track']
-                print(
-                    f"♪ Song identified: {track.get('title', 'Unknown')} by {track.get('subtitle', 'Unknown')}")
+                title = track.get('title', 'Unknown')
+                artist = track.get('subtitle', 'Unknown')
+
+                print(f"♪ Song identified: {title} by {artist}")
+
+                # Print offset if available
+                if offset is not None:
+                    print(f"  Position: {offset:.1f}s into song")
+
+                    # Get duration from MusicBrainz
+                    duration = await get_track_duration_musicbrainz(title, artist)
+                    if duration:
+                        remaining = duration - offset
+                        print(
+                            f"  Remaining: {int(remaining // 60)}:{int(remaining % 60):02d} / {int(duration // 60)}:{int(duration % 60):02d}")
+                        print("Sleeping until song ends...")
+                        await asyncio.sleep(remaining + 1)
+                    else:
+                        print("  Could not fetch duration from MusicBrainz")
+                        # Wait for the interval
+                        await asyncio.sleep(SHAZAM_INTERVAL)
+
             else:
                 print("Could not identify song")
         except Exception as e:
             print(f"Error identifying song: {e}")
-
-        # Wait for the interval
-        await asyncio.sleep(SHAZAM_INTERVAL)
+            import traceback
+            traceback.print_exc()
 
 
 async def main():

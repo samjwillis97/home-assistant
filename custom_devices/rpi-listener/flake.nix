@@ -71,6 +71,7 @@
               scipy
               scipy-stubs
               tkinter
+              aiohttp
             ]))
           ];
         };
