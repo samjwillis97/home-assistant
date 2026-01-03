@@ -18,6 +18,9 @@ FORMAT = pyaudio.paFloat32
 
 # ---------------- FFT SETUP
 SMOOTHING = 0.7
+PEAK_FALL_RATE = 0.01  # How fast peaks fall per frame
+REFERENCE_LEVEL_DECAY = 0.995  # How fast the reference level decays (closer to 1 = slower)
+REFERENCE_LEVEL_ATTACK = 1.5  # Multiplier when new peak exceeds reference
 BAND_EDGES = [
     (20, 80),
     (80, 160),
@@ -51,6 +54,12 @@ fig, ax = plt.subplots(figsize=(12, 6))
 x_pos = np.arange(len(bands))
 bars = ax.bar(x_pos, np.zeros(len(bands)), color='cyan',
               edgecolor='blue', linewidth=1.5)
+
+# Peak hold lines
+peak_lines = []
+for i in x_pos:
+    line, = ax.plot([i - 0.4, i + 0.4], [0, 0], color='red', linewidth=2)
+    peak_lines.append(line)
 
 ax.set_ylim(0, 1)
 ax.set_xlim(-0.5, len(bands) - 0.5)
@@ -128,6 +137,8 @@ async def get_track_duration_musicbrainz(title, artist):
 async def visualization_task():
     """Continuously visualize audio and populate the buffer"""
     band_values = np.zeros(9)
+    peak_values = np.zeros(9)
+    reference_level = 1.0  # Adaptive reference for normalization
     loop = asyncio.get_event_loop()
 
     while True:
@@ -147,15 +158,40 @@ async def visualization_task():
 
         band_values = SMOOTHING * band_values + (1 - SMOOTHING) * new_values
 
-        # Prevent division by zero
-        if band_values.max() > 0:
-            normalized = np.sqrt(band_values / band_values.max())
+        # Update adaptive reference level
+        current_max = band_values.max()
+        if current_max > reference_level:
+            # Fast attack when signal exceeds reference
+            reference_level = current_max * REFERENCE_LEVEL_ATTACK
+        else:
+            # Slow decay when signal is below reference
+            reference_level *= REFERENCE_LEVEL_DECAY
+            # Prevent reference from getting too small
+            reference_level = max(reference_level, current_max * 0.5, 0.01)
+
+        # Normalize against adaptive reference level
+        if reference_level > 0:
+            normalized = np.sqrt(band_values / reference_level)
+            # Clip to max of 1.0
+            normalized = np.minimum(normalized, 1.0)
         else:
             normalized = band_values
+
+        # Update peaks: if current value exceeds peak, set new peak
+        # Otherwise, let peak fall slowly
+        for i, value in enumerate(normalized):
+            if value > peak_values[i]:
+                peak_values[i] = value
+            else:
+                peak_values[i] = max(0, peak_values[i] - PEAK_FALL_RATE)
 
         # Update bars
         for bar, value in zip(bars, normalized):
             bar.set_height(value)
+
+        # Update peak lines
+        for i, (line, peak) in enumerate(zip(peak_lines, peak_values)):
+            line.set_ydata([peak, peak])
 
         plt.pause(0.001)
         await asyncio.sleep(0)  # Yield control to other tasks
