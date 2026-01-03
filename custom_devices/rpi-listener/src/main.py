@@ -6,6 +6,7 @@ from scipy import signal
 from shazamio import Shazam
 import asyncio
 import wave
+from collections import deque
 
 # ---------------- AUDIO SETUP
 RATE = 44800
@@ -31,6 +32,11 @@ FREQ_RESOLUTION = RATE / CHUNK
 
 # ---------------- SHAZAM
 SAMPLE_LENGTH = 10  # Seconds
+SHAZAM_INTERVAL = 10  # How often to identify songs (seconds)
+
+# Shared audio buffer
+chunks_needed = int(RATE / CHUNK * SAMPLE_LENGTH)
+audio_buffer = deque(maxlen=chunks_needed)
 
 
 bands = [(int(low/FREQ_RESOLUTION), int(high/FREQ_RESOLUTION))
@@ -73,7 +79,7 @@ window = signal.get_window('hann', CHUNK)
 
 
 async def identify_song(audio_frames, filename='temp_audio.wav'):
-    """Record audio to file and identify using Shazam"""
+    """Identify song from audio frames using Shazam"""
     # Save audio to WAV file
     with wave.open(filename, 'wb') as wf:
         wf.setnchannels(AUDIO_CHANNELS)
@@ -87,57 +93,23 @@ async def identify_song(audio_frames, filename='temp_audio.wav'):
     return result
 
 
-async def main():
-    # Record initial sample for song identification
-    print(f"Recording {SAMPLE_LENGTH} seconds for song identification...")
-    chunks_needed = int(RATE / CHUNK * SAMPLE_LENGTH)
-    audio_frames = []
+async def visualization_task():
+    """Continuously visualize audio and populate the buffer"""
     band_values = np.zeros(9)
+    loop = asyncio.get_event_loop()
 
-    for i in range(chunks_needed):
-        raw_data = stream.read(CHUNK, exception_on_overflow=False)
-        audio_frames.append(raw_data)
+    while True:
+        # Read audio in a non-blocking way
+        raw_data = await loop.run_in_executor(
+            None,
+            lambda: stream.read(CHUNK, exception_on_overflow=False)
+        )
+        audio_buffer.append(raw_data)
 
-        # Still visualize while recording
+        # Process for visualization
         data = np.frombuffer(raw_data, dtype=np.float32)
         windowed = data * window
         fft_data = np.abs(np.fft.rfft(windowed))
-        new_values = np.array([np.sum(fft_data[low:high])
-                              for low, high in bands])
-        band_values_local = SMOOTHING * \
-            band_values + (1 - SMOOTHING) * new_values
-
-        if band_values_local.max() > 0:
-            normalized = np.sqrt(band_values_local / band_values_local.max())
-        else:
-            normalized = band_values_local
-
-        for bar, value in zip(bars, normalized):
-            bar.set_height(value)
-        plt.pause(0.001)
-
-    print("Identifying song...")
-    try:
-        result = await identify_song(audio_frames)
-        print(result)
-        if result.get('track'):
-            track = result['track']
-            print(
-                f"Song identified: {track.get('title', 'Unknown')} by {track.get('subtitle', 'Unknown')}")
-        else:
-            print("Could not identify song")
-    except Exception as e:
-        print(f"Error identifying song: {e}")
-
-    # Continue with visualization
-    print("Continuing with visualization...")
-    while True:
-        data = np.frombuffer(stream.read(
-            CHUNK, exception_on_overflow=False), dtype=np.float32)
-
-        windowed = data * window
-        fft_data = np.abs(np.fft.rfft(windowed))
-
         new_values = np.array([np.sum(fft_data[low:high])
                               for low, high in bands])
 
@@ -153,7 +125,51 @@ async def main():
         for bar, value in zip(bars, normalized):
             bar.set_height(value)
 
-        plt.pause(0.001)  # Small pause to update plot
+        plt.pause(0.001)
+        await asyncio.sleep(0)  # Yield control to other tasks
+
+
+async def shazam_task():
+    """Periodically identify songs from the audio buffer"""
+    print(
+        f"Shazam task started - will identify every {SHAZAM_INTERVAL} seconds")
+
+    while True:
+        # Wait for buffer to fill
+        while len(audio_buffer) < chunks_needed:
+            await asyncio.sleep(0.1)
+
+        print("Identifying song...")
+        try:
+            # Create a copy of current buffer
+            audio_frames = list(audio_buffer)
+            result = await identify_song(audio_frames)
+
+            if result.get('matches'):
+                match = result['matches'][0]
+                if match.get('offset'):
+                    print(
+                        f"♪ Currently {match['offset']}s through song")
+
+            if result.get('track'):
+                track = result['track']
+                print(
+                    f"♪ Song identified: {track.get('title', 'Unknown')} by {track.get('subtitle', 'Unknown')}")
+            else:
+                print("Could not identify song")
+        except Exception as e:
+            print(f"Error identifying song: {e}")
+
+        # Wait for the interval
+        await asyncio.sleep(SHAZAM_INTERVAL)
+
+
+async def main():
+    """Run visualization and Shazam tasks concurrently"""
+    await asyncio.gather(
+        visualization_task(),
+        shazam_task()
+    )
 
 
 if __name__ == '__main__':
