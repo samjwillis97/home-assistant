@@ -1,0 +1,8 @@
+id: "64d4e950-6037-431b-9282-6f7eeef5f3d5"
+name: "Bedroom: Sleep"
+icon: mdi:sleep
+entities:
+  switch.bedroom_lights_switch:
+    state: "off"
+  light.bedroom_lamp_light:
+    state: "off"
