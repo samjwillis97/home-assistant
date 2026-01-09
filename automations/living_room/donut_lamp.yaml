@@ -1,0 +1,18 @@
+id: '9ea72a2a-a3ea-443c-9414-2fce35c81bf6'
+alias: "Living Room: Donut Lamp"
+description: >-
+  Controls the Donut Lamp in the living room
+trigger:
+- trigger: state
+  entity_id: light.living_room_lamp
+  to: "on"
+condition: []
+action:
+- sequence:
+    - alias: "Wait 1s"
+      delay: 1
+    - alias: "Turn on Lamp"
+      service: light.turn_on
+      target:
+        entity_id: light.donut_lamp
+mode: single

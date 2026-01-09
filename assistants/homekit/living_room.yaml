@@ -1,3 +1,5 @@
 - light.living_room_lamp
+- light.living_room_lights
+- light.donut_lamp
 - climate.living_room_aircon
 - input_boolean.living_room_camera_state
