@@ -1,6 +1,7 @@
 import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 from scipy.fftpack import fft
 from scipy import signal
 from shazamio import Shazam
@@ -21,6 +22,7 @@ SMOOTHING = 0.7
 PEAK_FALL_RATE = 0.01  # How fast peaks fall per frame
 REFERENCE_LEVEL_DECAY = 0.995  # How fast the reference level decays (closer to 1 = slower)
 REFERENCE_LEVEL_ATTACK = 1.5  # Multiplier when new peak exceeds reference
+NUM_SEGMENTS = 20  # Number of vertical segments per band
 BAND_EDGES = [
     (20, 80),
     (80, 160),
@@ -48,26 +50,64 @@ bands = [(int(low/FREQ_RESOLUTION), int(high/FREQ_RESOLUTION))
 band_labels = ['Sub', 'Bass', 'Low Bass', 'Low Mid',
                'Mid', 'High Mid', 'Pres', 'Treble', 'Brill']
 
-# Matplotlib setup
+# Matplotlib setup - old school segmented style
 plt.ion()
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(14, 7), facecolor='black')
+ax.set_facecolor('black')
+
 x_pos = np.arange(len(bands))
-bars = ax.bar(x_pos, np.zeros(len(bands)), color='cyan',
-              edgecolor='blue', linewidth=1.5)
+
+# Create segmented bars
+segment_height = 1.0 / NUM_SEGMENTS
+segment_gap = segment_height * 0.15  # 15% gap between segments
+bar_width = 0.7
+
+# Store segments for each band
+segments = []
+for band_idx in x_pos:
+    band_segments = []
+    for seg_idx in range(NUM_SEGMENTS):
+        # Position of this segment
+        y_bottom = seg_idx * segment_height
+        y_pos = (seg_idx + 0.5) * segment_height
+
+        # Color based on height: green (0-40%) -> yellow (40-70%) -> red (70-100%)
+        if y_pos < 0.4:
+            color = '#00ff00'  # Green
+        elif y_pos < 0.7:
+            color = '#ffff00'  # Yellow
+        else:
+            color = '#ff0000'  # Red
+
+        # Create rectangle
+        rect = Rectangle((band_idx - bar_width/2, y_bottom),
+                         bar_width, segment_height - segment_gap,
+                         facecolor=color, edgecolor='black', linewidth=1)
+        rect.set_visible(False)  # Start hidden
+        ax.add_patch(rect)
+        band_segments.append(rect)
+    segments.append(band_segments)
 
 # Peak hold lines
 peak_lines = []
 for i in x_pos:
-    line, = ax.plot([i - 0.4, i + 0.4], [0, 0], color='red', linewidth=2)
+    line, = ax.plot([i - bar_width/2, i + bar_width/2], [0, 0],
+                    color='#ffffff', linewidth=3, alpha=0.9)
     peak_lines.append(line)
 
 ax.set_ylim(0, 1)
 ax.set_xlim(-0.5, len(bands) - 0.5)
 ax.set_xticks(x_pos)
-ax.set_xticklabels(band_labels)
-ax.set_ylabel('Amplitude')
-ax.set_title('Music Visualizer - 9 Bands')
-ax.grid(axis='y', alpha=0.3)
+ax.set_xticklabels(band_labels, color='#00ff00', fontsize=10, fontweight='bold')
+ax.set_ylabel('Amplitude', color='#00ff00', fontsize=12, fontweight='bold')
+ax.set_title('♪ SPECTRUM ANALYZER ♪', color='#00ff00', fontsize=16, fontweight='bold', pad=20)
+ax.tick_params(axis='y', colors='#00ff00')
+ax.tick_params(axis='x', colors='#00ff00')
+
+# Style spines
+for spine in ax.spines.values():
+    spine.set_color('#00ff00')
+    spine.set_linewidth(2)
 
 p = pyaudio.PyAudio()
 
@@ -185,16 +225,25 @@ async def visualization_task():
             else:
                 peak_values[i] = max(0, peak_values[i] - PEAK_FALL_RATE)
 
-        # Update bars
-        for bar, value in zip(bars, normalized):
-            bar.set_height(value)
+        # Update segmented bars
+        for band_idx, value in enumerate(normalized):
+            # Determine how many segments to light up
+            num_lit_segments = int(value * NUM_SEGMENTS)
+
+            # Update visibility of segments
+            for seg_idx, segment in enumerate(segments[band_idx]):
+                if seg_idx < num_lit_segments:
+                    segment.set_visible(True)
+                else:
+                    segment.set_visible(False)
 
         # Update peak lines
         for i, (line, peak) in enumerate(zip(peak_lines, peak_values)):
             line.set_ydata([peak, peak])
 
-        plt.pause(0.001)
-        await asyncio.sleep(0)  # Yield control to other tasks
+        fig.canvas.draw_idle()
+        fig.canvas.flush_events()
+        await asyncio.sleep(0.001)  # Yield control to other tasks
 
 
 async def shazam_task():
