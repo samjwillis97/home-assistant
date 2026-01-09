@@ -1,18 +1,57 @@
-id: '9ea72a2a-a3ea-443c-9414-2fce35c81bf6'
+id: "9ea72a2a-a3ea-443c-9414-2fce35c81bf6"
 alias: "Living Room: Donut Lamp"
 description: >-
   Controls the Donut Lamp in the living room
+
+  Currently will just match the main lamp.
+mode: queued
+trace:
+  stored_traces: 25
+
 trigger:
-- trigger: state
-  entity_id: light.living_room_lamp
-  to: "on"
-condition: []
-action:
-- sequence:
-    - alias: "Wait 1s"
-      delay: 1
-    - alias: "Turn on Lamp"
+  - trigger: state
+    id: "main-lamp-on"
+    entity_id: light.living_room_lamp
+    to: "on"
+
+  - trigger: state
+    id: "main-lamp-off"
+    entity_id: light.living_room_lamp
+    to: "off"
+
+variables:
+  anchors:
+    - &turn_on
+      alias: "Turn on lamp"
       service: light.turn_on
       target:
         entity_id: light.donut_lamp
-mode: single
+
+    - &turn_off
+      alias: "Turn off lamp"
+      service: light.turn_off
+      target:
+        entity_id: light.donut_lamp
+
+action:
+  - choose:
+    - alias: "Turn on with lamp"
+      conditions:
+        - alias: "main lamp turned on"
+          condition: state
+          entity_id: light.living_room_lamp
+          state: "on"
+      sequence:
+        - alias: "Wait 1s"
+          delay: 1
+        - *turn_on
+    - alias: "Turn off with lamp"
+      conditions:
+        - alias: "main lamp turned off"
+          condition: state
+          entity_id: light.living_room_lamp
+          state: "off"
+      sequence:
+        - alias: "Wait 1s"
+          delay: 1
+        - *turn_off
