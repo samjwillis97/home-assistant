@@ -1,0 +1,12 @@
+id: "f25af9fa-6b8e-4111-86da-5134202bc81d"
+name: "House Away"
+icon: mdi:shield-lock
+entities:
+  lights.living_room_lights:
+    state: "off"
+  lights.study_lights:
+    state: "off"
+  switch.bedroom_lights_switch:
+    state: "off"
+  input_boolean.living_room_camera_state:
+    state: "on"

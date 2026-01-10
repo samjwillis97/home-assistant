@@ -2,7 +2,9 @@ id: '94bea6be-6520-4227-b451-fee4d95df21f'
 alias: "House: Away"
 description: >-
   This is pretty much only required to turn off the input_boolean for living room camera state
-  due to how this operates
+  due to how this operates.
+
+  Now also using to turn off lights etc. when leaving the house
 mode: queued
 trace:
   stored_traces: 25
@@ -24,10 +26,10 @@ triggers:
 variables:
   anchors:
     - &turned_on
-      alias: "Turn on the camera power input boolean"
-      service: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.living_room_camera_state
+      actions:
+        - action: scene.turn_on
+          target:
+            entity_id: scene.house_away
 
     - &turned_off
       alias: "Turn off the camera power input boolean"
@@ -42,9 +44,7 @@ action:
         - condition: state
           entity_id: input_boolean.house_mode_away
           state: "on"
-
-      sequence:
-        - *turned_on
+      <<: *turned_on
 
     - alias: "House mode turned off"
       conditions:
