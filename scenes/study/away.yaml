@@ -1,0 +1,6 @@
+id: "23660dfd-2bce-49f4-9f56-9c20eab103a5"
+name: "Study: Away"
+icon: mdi:shield-lock
+entities:
+  lights.study_lights:
+    state: "off"

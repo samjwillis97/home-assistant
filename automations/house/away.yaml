@@ -30,7 +30,7 @@ variables:
         - alias: "Turn on House Away scene"
           service: scene.turn_on
           target:
-            entity_id: scene.house_away
+            entity_id: scene.away
 
     - &turned_off
       alias: "Turn off the camera power input boolean"

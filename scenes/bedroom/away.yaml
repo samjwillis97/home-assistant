@@ -1,0 +1,8 @@
+id: "0c91f58e-b1e0-44be-a5ed-d981317b114e"
+name: "Bedroom: Away"
+icon: mdi:shield-lock
+entities:
+  switch.bedroom_lights_switch:
+    state: "off"
+  light.bedroom_lamp_light:
+    state: "off"

@@ -1,0 +1,10 @@
+id: "f25af9fa-6b8e-4111-86da-5134202bc81d"
+name: "Away"
+icon: mdi:shield-lock
+entities:
+  scene.living_room_away:
+    state: "on"
+  scene.study_away:
+    state: "on"
+  scene.bedroom_away:
+    state: "on"
