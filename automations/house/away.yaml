@@ -26,8 +26,9 @@ triggers:
 variables:
   anchors:
     - &turned_on
-      actions:
-        - action: scene.turn_on
+      sequence:
+        - alias: "Turn on House Away scene"
+          service: scene.turn_on
           target:
             entity_id: scene.house_away
 
