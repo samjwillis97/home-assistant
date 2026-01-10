@@ -1,6 +1,6 @@
-id: "23660dfd-2bce-49f4-9f56-9c20eab103a5"
-name: "Study: Away"
-icon: mdi:shield-lock
+id: "b4eb2f31-f204-4fa5-b35f-0ac4df312f58"
+name: "Study: Sleep"
+icon: mdi:sleep
 entities:
   lights.study_lights:
     state: "off"
