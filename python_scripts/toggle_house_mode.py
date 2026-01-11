@@ -16,7 +16,7 @@ elif mode not in VALID_MODE_NAMES:
     logger.error("Invalid mode name: '%s'.", mode)
 else:
     logger.info("Toggling house mode to '%s'.", mode)
-    for name in VALID_MODE_NAMES
+    for name in VALID_MODE_NAMES:
         if mode == name:
             hass.services.call("input_boolean", "turn_on", { "entity_id": f"input_boolean.house_mode_{name}" }, False)
         else:
