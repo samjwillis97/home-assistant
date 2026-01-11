@@ -1,0 +1,56 @@
+id: "3a7182ff-ae2a-452e-9e43-3d4d89d9d060"
+alias: "House: Away Helper Boolean"
+description: >-
+  This allows apple homekit to use the boolean to change the mode of the house to away
+mode: queued
+trace:
+  stored_traces: 25
+
+triggers:
+  - platform: homeassistant
+    event: start
+
+  - platform: event
+    event_type:
+      - automation_reloaded
+
+  - platform: state
+    entity_id:
+      - input_boolean.house_mode_away
+    from: ~
+
+variables:
+  anchors:
+    - &turned_on
+      sequence:
+        - alias: "Change House Mode to Away"
+          service: input_select.select_option
+          target:
+            entity_id: input_select.house_mode
+          data:
+            option: "away"
+
+    - &turned_off
+      - alias: "Change House Mode to Away"
+        service: input_select.select_option
+        target:
+          entity_id: input_select.house_mode
+        data:
+          option: "default"
+
+action:
+  - choose:
+      - alias: "House mode turned on"
+        conditions:
+          - condition: state
+            entity_id: input_boolean.house_mode_away
+            state: "on"
+        <<: *turned_on
+
+      - alias: "House mode turned off"
+        conditions:
+          - condition: state
+            entity_id: input_boolean.house_mode_away
+            state: "off"
+        sequence:
+          - *turned_off

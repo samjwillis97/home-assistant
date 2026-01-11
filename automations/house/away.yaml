@@ -10,52 +10,45 @@ trace:
   stored_traces: 25
 
 triggers:
-  - platform: homeassistant
-    event: start
-
-  - platform: event
-    event_type:
-      - automation_reloaded
-
-  - platform: state
+  - id: to_away
+    platform: state
     entity_id:
-      - input_boolean.house_mode_away
-    from: ~
+      - input_select.house_mode
+    to: away
+
+  - id: from_away
+    platform: state
+    entity_id:
+      - input_select.house_mode
+    from: away
 
 variables:
   anchors:
-    - &turned_on
-      sequence:
-        - alias: "Change House Mode to Away"
-          service: input_select.select_option
-          target:
-            entity_id: input_select.house_mode
-          data:
-            option: "away"
-        - alias: "Turn on All Away scenes"
-          service: script.turn_on
-          target:
-            entity_id: script.away_scenes
+    - &to_away
+      - alias: "Turn on All Away scenes"
+        service: script.turn_on
+        target:
+          entity_id: script.away_scenes
 
-    - &turned_off
-      alias: "Turn off the camera power input boolean"
-      service: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.living_room_camera_state
+    # This could potentially be changed to a script in the future
+    - &from_away
+      - alias: "Turn off the camera power input boolean"
+        service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.living_room_camera_state
 
 action:
   - choose:
-      - alias: "House mode turned on"
+      - alias: "House mode changed to away"
         conditions:
-          - condition: state
-            entity_id: input_boolean.house_mode_away
-            state: "on"
-        <<: *turned_on
-
-      - alias: "House mode turned off"
-        conditions:
-          - condition: state
-            entity_id: input_boolean.house_mode_away
-            state: "off"
+          - condition: trigger
+            id: to_away
         sequence:
-          - *turned_off
+          <<: *to_away
+
+      - alias: "House mode changed from away"
+        conditions:
+          - condition: trigger
+            id: from_away
+        sequence:
+          <<: *from_away
