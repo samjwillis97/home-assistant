@@ -58,17 +58,18 @@ action:
             condition: time
             after: "21:30:00"
             before: "03:00:00"
-        choose:
-          - conditions:
-              or:
-                - alias: "Apple TV turned off"
-                  condition: trigger
-                  id: apple_tv_off
-                - alias: "House Away turned off"
-                  condition: trigger
-                  id: house_away_turned_off
-            sequence:
-              <<: *turn_on_bedtime_mode
+        sequence:
+          - choose:
+              - conditions:
+                or:
+                  - alias: "Apple TV turned off"
+                    condition: trigger
+                    id: apple_tv_off
+                  - alias: "House Away turned off"
+                    condition: trigger
+                    id: house_away_turned_off
+                sequence:
+                  <<: *turn_on_bedtime_mode
       - alias: "Turn on Default house mode"
         conditions:
           - alias: "Time 0900 -> 2130"
