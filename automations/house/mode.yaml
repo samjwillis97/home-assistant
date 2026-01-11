@@ -22,13 +22,15 @@ triggers:
 
 variables:
   anchors:
-    - &turn_on_bedtime_mode
+    - &turn_off_all_besides_bedtime
       - alias: "Turn off Other modes"
         service: input_boolean.turn_off
         target:
           entity_id: 
             - input_boolean.house_mode_away
             - input_boolean.house_mode_sleep
+
+    - &turn_on_bedtime_mode
       - alias: "Turn on Bedtime mode"
         service: input_boolean.turn_on
         target:
@@ -53,4 +55,6 @@ action:
           after: "21:30:00"
           before: "03:00:00"
       sequence:
-        <<: *turn_on_bedtime_mode
+        <<:
+          - *turn_off_all_besides_bedtime
+          - *turn_on_bedtime_mode
