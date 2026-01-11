@@ -22,13 +22,12 @@ triggers:
 variables:
   anchors:
     - &turned_on
-      sequence:
-        - alias: "Change House Mode to Away"
-          service: input_select.select_option
-          target:
-            entity_id: input_select.house_mode
-          data:
-            option: "away"
+      - alias: "Change House Mode to Away"
+        service: input_select.select_option
+        target:
+          entity_id: input_select.house_mode
+        data:
+          option: "away"
 
     - &turned_off
       - alias: "Change House Mode to Away"
@@ -45,7 +44,8 @@ action:
           - condition: state
             entity_id: input_boolean.house_mode_away
             state: "on"
-        <<: *turned_on
+        sequence:
+          <<: *turned_on
 
       - alias: "House mode turned off"
         conditions:
@@ -53,4 +53,4 @@ action:
             entity_id: input_boolean.house_mode_away
             state: "off"
         sequence:
-          - *turned_off
+          <<: *turned_off
