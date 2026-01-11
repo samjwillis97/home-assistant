@@ -55,6 +55,5 @@ action:
           after: "21:30:00"
           before: "03:00:00"
       sequence:
-        <<:
-          - *turn_off_all_besides_bedtime
-          - *turn_on_bedtime_mode
+        <<: *turn_off_all_besides_bedtime
+        # <<: *turn_on_bedtime_mode
