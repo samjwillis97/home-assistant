@@ -20,21 +20,15 @@ triggers:
       - media_player.lounge_room
     to: "off"
 
+  # - id: mode_turned_on
+
 variables:
   anchors:
-    - &turn_off_all_besides_bedtime
-      - alias: "Turn off Other modes"
-        service: input_boolean.turn_off
-        target:
-          entity_id: 
-            - input_boolean.house_mode_away
-            - input_boolean.house_mode_sleep
-
     - &turn_on_bedtime_mode
       - alias: "Turn on Bedtime mode"
-        service: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.house_mode_bedtime
+        service: python_script.toggle_house_mode
+        data: 
+          mode: "bedtime"
 
 action:
   - choose:
@@ -55,5 +49,4 @@ action:
           after: "21:30:00"
           before: "03:00:00"
       sequence:
-        <<: *turn_off_all_besides_bedtime
-        # <<: *turn_on_bedtime_mode
+        <<: *turn_on_bedtime_mode
