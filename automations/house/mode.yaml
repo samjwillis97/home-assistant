@@ -1,4 +1,4 @@
-id: '5a3d6a60-86ab-408b-b6db-c5a053281a34'
+id: "5a3d6a60-86ab-408b-b6db-c5a053281a34"
 alias: "House: Mode Control"
 description: >-
   This is used to control the `input_boolean`'s for the state of the house, those can then be used by other automations to make decisions against.
@@ -20,33 +20,66 @@ triggers:
       - media_player.lounge_room
     to: "off"
 
-  # - id: mode_turned_on
+  - id: house_away_turned_off
+    platform: state
+    entity_id:
+      - input_boolean.house_mode_away
+    to: "off"
 
 variables:
   anchors:
     - &turn_on_bedtime_mode
-      - alias: "Turn on Bedtime mode"
-        service: python_script.toggle_house_mode
-        data: 
-          mode: "bedtime"
+      service: input_select.select_option
+      target:
+        entity_id: input_select.house_mode
+      data:
+        option: "bedtime"
+
+    - &turn_on_default_mode
+      service: input_select.select_option
+      target:
+        entity_id: input_select.house_mode
+      data:
+        option: "default"
 
 action:
   - choose:
-    - alias: "Do nothing"
-      conditions:
-        - alias: "House mode Away already on"
-          condition: state
-          entity_id: input_boolean.house_mode_away
-          state: "on"
-      sequence: []
-    - alias: "Turn on Bedtime house mode"
-      conditions:
-        - alias: "Apple TV Turned off"
-          condition: trigger
-          id: apple_tv_off
-        - alias: "Time 2130 -> 0300"
-          condition: time
-          after: "21:30:00"
-          before: "03:00:00"
-      sequence:
-        <<: *turn_on_bedtime_mode
+      - alias: "Do nothing"
+        conditions:
+          - alias: "House mode Away already on"
+            condition: state
+            entity_id: input_boolean.house_mode_away
+            state: "on"
+        sequence: []
+      - alias: "Turn on Bedtime house mode"
+        conditions:
+          - alias: "Time 2130 -> 0300"
+            condition: time
+            after: "21:30:00"
+            before: "03:00:00"
+        action:
+          choose:
+            - conditions:
+                or:
+                  - alias: "Apple TV turned off"
+                    condition: trigger
+                    id: apple_tv_off
+                  - alias: "House Away turned off"
+                    condition: trigger
+                    id: house_away_turned_off
+              sequence:
+                <<: *turn_on_bedtime_mode
+      - alias: "Turn on Default house mode"
+        action:
+          sequence:
+            <<: *turn_on_default_mode
+        # conditions:
+        #   - alias: "Apple TV Turned off"
+        #     condition: trigger
+        #     id: apple_tv_off
+        #   - alias: "Time 2130 -> 0300"
+        #     condition: time
+        #     after: "21:30:00"
+        #     before: "03:00:00"
+        # sequence:
+        #   <<: *turn_on_bedtime_mode
