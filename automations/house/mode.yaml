@@ -23,17 +23,16 @@ triggers:
 variables:
   anchors:
     - &turn_on_bedtime_mode
-      sequence:
-        - alias: "Turn off Other modes"
-          service: input_boolean.turn_off
-          target:
-            entity_id: 
-              - input_boolean.house_mode_away
-              - input_boolean.house_mode_sleep
-        - alias: "Turn on Bedtime mode"
-          service: input_boolean.turn_on
-          target:
-            entity_id: input_boolean.house_mode_bedtime
+      - alias: "Turn off Other modes"
+        service: input_boolean.turn_off
+        target:
+          entity_id: 
+            - input_boolean.house_mode_away
+            - input_boolean.house_mode_sleep
+      - alias: "Turn on Bedtime mode"
+        service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.house_mode_bedtime
 
 action:
   - choose:
@@ -43,6 +42,7 @@ action:
           condition: state
           entity_id: input_boolean.house_mode_away
           state: "on"
+      sequence: []
     - alias: "Turn on Bedtime house mode"
       conditions:
         - alias: "Apple TV Turned off"
@@ -52,4 +52,5 @@ action:
           condition: time
           after: "21:30:00"
           before: "03:00:00"
-      <<: *turn_on_bedtime_mode
+      sequence:
+        <<: *turn_on_bedtime_mode
