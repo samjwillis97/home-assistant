@@ -44,6 +44,7 @@ variables:
 
 action:
   - choose:
+      # This just means if the house is already in away do not change it.
       - alias: "Do nothing"
         conditions:
           - alias: "House mode Away already on"
@@ -70,9 +71,13 @@ action:
               sequence:
                 <<: *turn_on_bedtime_mode
       - alias: "Turn on Default house mode"
-        action:
-          sequence:
-            <<: *turn_on_default_mode
+        conditions:
+          - alias: "Time 0900 -> 2130"
+            condition: time
+            after: "09:00:00"
+            before: "21:30:00"
+        sequence:
+          <<: *turn_on_default_mode
         # conditions:
         #   - alias: "Apple TV Turned off"
         #     condition: trigger
