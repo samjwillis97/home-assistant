@@ -1,4 +1,4 @@
-id: '94bea6be-6520-4227-b451-fee4d95df21f'
+id: "94bea6be-6520-4227-b451-fee4d95df21f"
 alias: "House: Away"
 description: >-
   This is pretty much only required to turn off the input_boolean for living room camera state
@@ -22,11 +22,16 @@ triggers:
       - input_boolean.house_mode_away
     from: ~
 
-
 variables:
   anchors:
     - &turned_on
       sequence:
+        - alias: "Change House Mode to Away"
+          service: input_select.select_option
+          target:
+            entity_id: input_select.house_mode
+          data:
+            option: "away"
         - alias: "Turn on All Away scenes"
           service: script.turn_on
           target:
@@ -40,18 +45,17 @@ variables:
 
 action:
   - choose:
-    - alias: "House mode turned on"
-      conditions:
-        - condition: state
-          entity_id: input_boolean.house_mode_away
-          state: "on"
-      <<: *turned_on
+      - alias: "House mode turned on"
+        conditions:
+          - condition: state
+            entity_id: input_boolean.house_mode_away
+            state: "on"
+        <<: *turned_on
 
-    - alias: "House mode turned off"
-      conditions:
-        - condition: state
-          entity_id: input_boolean.house_mode_away
-          state: "off"
-
-      sequence:
-        - *turned_off
+      - alias: "House mode turned off"
+        conditions:
+          - condition: state
+            entity_id: input_boolean.house_mode_away
+            state: "off"
+        sequence:
+          - *turned_off
