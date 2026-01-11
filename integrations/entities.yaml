@@ -10,6 +10,17 @@ input_boolean:
   living_room_camera_state:
     name: Living Room Camera State
 
+input_select:
+  house_mode:
+    name: "House Mode"
+    options:
+      - "default"
+      - "away"
+      - "bedtime"
+      - "sleep"
+    initial: "default"
+    icon: mdi:home
+
 shell_command:
   turn_on_living_room_camera: curl http://localhost:5000/api/living-room-cam/power/on
   turn_off_living_room_camera: curl http://localhost:5000/api/living-room-cam/power/off
