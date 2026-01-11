@@ -12,9 +12,8 @@ mode = data.get("mode", NOTHING_MODE_NAME)
 
 if mode not in VALID_MODE_NAMES:
     logger.error("Invalid mode name: '%s'.", mode)
-    return
-
+else:
 # `logger` and `time` are available as builtin without the need of explicit import.
-logger.info("Toggling house mode to '%s'.", mode)
+    logger.info("Toggling house mode to '%s'.", mode)
 
 
