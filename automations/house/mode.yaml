@@ -164,22 +164,15 @@ action:
           <<: *turn_on_relaxation_mode
 
       # Bedtime mode turned on when apple TV turned off at night
-      # OR it hits midnight
       - alias: "Turn on Bedtime house mode"
         conditions:
-          or:
-            - and:
-                - alias: "Time 2130 -> 0300"
-                  condition: time
-                  after: "21:30:00"
-                  before: "00:00:00"
-                - alias: "Apple TV turned off"
-                  condition: trigger
-                  id: apple_tv_off
-            - alias: "Time 0000 -> 0300"
-              condition: time
-              after: "00:00:00"
-              before: "03:00:00"
+          - alias: "Time 2130 -> 0300"
+            condition: time
+            after: "21:30:00"
+            before: "00:00:00"
+          - alias: "Apple TV turned off"
+            condition: trigger
+            id: apple_tv_off
         sequence:
           <<: *turn_on_bedtime_mode
 
