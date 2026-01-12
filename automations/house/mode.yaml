@@ -102,7 +102,7 @@ action:
         conditions:
           - alias: "Time 2130 -> 0300"
             condition: time
-            after: "21:30:00"
+            after: "21:00:00"
             before: "00:00:00"
           - alias: "Apple TV turned off"
             condition: trigger
