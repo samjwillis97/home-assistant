@@ -1,0 +1,10 @@
+id: "38b36b03-8b52-419e-b8f3-be8327d9ced4"
+name: "Living Room: Default (Lights)"
+icon: mdi:home-lightbulb-outline
+entities:
+  lights.living_room_lights:
+    state: "on"
+  light.living_room_lamp:
+    state: "off"
+  light.donut_lamp:
+    state: "off"

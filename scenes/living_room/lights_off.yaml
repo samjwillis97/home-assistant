@@ -1,6 +1,6 @@
-id: "2573f934-f371-4b60-988a-f4949edd0351"
-name: "Living Room: Sleep"
-icon: mdi:sleep
+id: "25f84bc3-9ec5-4fec-8961-8f771317e4e1"
+name: "Living Room: Lights Off"
+icon: mdi:power-off
 entities:
   lights.living_room_lights:
     state: "off"

@@ -1,0 +1,11 @@
+id: "dcd2822f-b425-4872-8670-0e0dece14085"
+name: "Living Room: Relaxation (Lights)"
+icon: mdi:beach
+entities:
+  lights.living_room_lights:
+    state: "off"
+  light.living_room_lamp:
+    state: "on"
+    brightness: 35
+  light.donut_lamp:
+    state: "on"
