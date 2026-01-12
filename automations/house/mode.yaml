@@ -49,7 +49,7 @@ variables:
       target:
         entity_id: input_select.house_mode
       data:
-        option: ""
+        option: "work"
 
     - &turn_on_wakeup_mode
       service: input_select.select_option
