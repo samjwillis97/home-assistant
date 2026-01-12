@@ -2,7 +2,7 @@ id: "2573f934-f371-4b60-988a-f4949edd0351"
 name: "Living Room: Sleep"
 icon: mdi:sleep
 entities:
-  lights.living_room_lights:
+  light.living_room_lights:
     state: "off"
   light.living_room_lamp:
     state: "off"

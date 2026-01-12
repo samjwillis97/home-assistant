@@ -2,7 +2,7 @@ id: "456a499f-e738-4953-a4a7-e8f7b6fbb74a"
 name: "Living Room: Dinner (Lights)"
 icon: mdi:pasta
 entities:
-  lights.living_room_lights:
+  light.living_room_lights:
     state: "on"
   light.living_room_lamp:
     state: "on"

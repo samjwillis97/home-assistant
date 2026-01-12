@@ -2,7 +2,7 @@ id: "25f84bc3-9ec5-4fec-8961-8f771317e4e1"
 name: "Living Room: Away"
 icon: mdi:shield-lock
 entities:
-  lights.living_room_lights:
+  light.living_room_lights:
     state: "off"
   input_boolean.living_room_camera_state:
     state: "on"
