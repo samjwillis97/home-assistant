@@ -35,23 +35,19 @@ variables:
 
 action:
   - choose:
-    - alias: "Turn on with lamp"
-      conditions:
-        - alias: "main lamp turned on"
-          condition: state
-          entity_id: light.living_room_lamp
-          state: "on"
-      sequence:
-        - alias: "Wait 1s"
-          delay: 1
-        - *turn_on
-    - alias: "Turn off with lamp"
-      conditions:
-        - alias: "main lamp turned off"
-          condition: state
-          entity_id: light.living_room_lamp
-          state: "off"
-      sequence:
-        - alias: "Wait 1s"
-          delay: 1
-        - *turn_off
+      - alias: "Turn on with lamp"
+        conditions:
+          - alias: "main lamp turned on"
+            condition: state
+            entity_id: light.living_room_lamp
+            state: "on"
+        sequence:
+          - *turn_on
+      - alias: "Turn off with lamp"
+        conditions:
+          - alias: "main lamp turned off"
+            condition: state
+            entity_id: light.living_room_lamp
+            state: "off"
+        sequence:
+          - *turn_off
