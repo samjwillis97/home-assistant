@@ -88,8 +88,6 @@ action:
                   entity_id: input_select.house_mode
                   state: "bedtime"
               sequence:
-                - *turn_off_lights
-                - *turn_off_lamp
                 - *turn_on_sleep_mode
             default:
               - *turn_off_lights
