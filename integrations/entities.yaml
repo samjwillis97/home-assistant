@@ -3,10 +3,6 @@
 input_boolean:
   house_mode_away:
     name: House Mode Away
-  house_mode_bedtime:
-    name: House Mode Bedtime
-  house_mode_sleep:
-    name: House Mode Sleep
   living_room_camera_state:
     name: Living Room Camera State
 
