@@ -145,7 +145,7 @@ action:
             before: "03:00:00"
         sequence:
           - choose:
-              - conditions:
+              conditions:
                 or:
                   - alias: "Apple TV turned off"
                     condition: trigger
