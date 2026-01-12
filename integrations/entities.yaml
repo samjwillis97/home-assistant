@@ -15,7 +15,11 @@ input_select:
     name: "House Mode"
     options:
       - "default"
+      - "wake up"
+      - "work"
       - "away"
+      - "dinner"
+      - "relaxation"
       - "bedtime"
       - "sleep"
     initial: "default"
