@@ -1,0 +1,81 @@
+id: "cbf42ac7-b1a6-479c-98d8-7e55c26c1924"
+alias: "Living Room: Scene Button"
+mode: queued
+trace:
+  stored_traces: 25
+
+triggers:
+  - id: "switch-on"
+    platform: event
+    event_type: zha_event
+    event_data:
+      device_id: 1219c944e5f66a01ca67e023d01abb3a
+      command: "on"
+
+  - id: "switch-off"
+    platform: event
+    event_type: zha_event
+    event_data:
+      device_id: 1219c944e5f66a01ca67e023d01abb3a
+      command: "off"
+
+variables:
+  anchors:
+    - &turn_off_lights
+      alias: "Turn off all lights"
+      service: scene.turn_on
+      target:
+        entity_id: switch.bedroom_lights_switch
+
+    - &activate_relaxation_lights
+      alias: "Turn on relaxation lights"
+      service: scene.turn_on
+      target:
+        entity_id: scene.living_room_relaxation_lights
+
+    - &activate_default_lights
+      alias: "Turn on default lights"
+      service: scene.turn_on
+      target:
+        entity_id: scene.living_room_default_lights
+
+    - &activate_dinner_lights
+      alias: "Turn on dinner lights"
+      service: scene.turn_on
+      target:
+        entity_id: scene.living_room_dinner_lights
+
+action:
+  - choose:
+      - alias: "Turn on when on button pressed"
+        conditions:
+          - condition: trigger
+            id: switch-on
+        sequence:
+          - choose:
+              - conditions:
+                  - alias: "House Mode - relaxation"
+                    condition: state
+                    entity_id: input_select.house_mode
+                    state: "relaxation"
+                sequence:
+                  - *activate_relaxation_lights
+              - conditions:
+                  - alias: "House Mode - dinner"
+                    condition: state
+                    entity_id: input_select.house_mode
+                    state: "dinner"
+                sequence:
+                  - *activate_dinner_lights
+            default:
+              - *activate_default_lights
+
+      - alias: "Turn off when off button pressed"
+        conditions:
+          - condition: trigger
+            id: switch-off
+        sequence:
+          - *turn_off_lights
+
+    default:
+      - *turn_off_lights
