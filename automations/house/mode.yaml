@@ -153,8 +153,8 @@ action:
                   - alias: "House Away turned off"
                     condition: trigger
                     id: house_away_turned_off
-                sequence:
-                  <<: *turn_on_bedtime_mode
+              sequence:
+                <<: *turn_on_bedtime_mode
       - alias: "Turn on Default house mode"
         conditions:
           - alias: "Time 0900 -> 2130"
