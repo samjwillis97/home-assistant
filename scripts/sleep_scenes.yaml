@@ -9,3 +9,4 @@ sequence:
         - scene.living_room_sleep
         - scene.study_sleep
         - scene.bedroom_sleep
+        - scene.dining_room_sleep
