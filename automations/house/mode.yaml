@@ -97,6 +97,62 @@ action:
             state: "on"
         sequence: []
 
+      # Bedtime mode turned on when apple TV turned off at night
+      - alias: "Turn on Bedtime house mode"
+        conditions:
+          - alias: "Time 2130 -> 0300"
+            condition: time
+            after: "21:30:00"
+            before: "00:00:00"
+          - alias: "Apple TV turned off"
+            condition: trigger
+            id: apple_tv_off
+        sequence:
+          <<: *turn_on_bedtime_mode
+
+      - alias: "Relaxation mode handling"
+        conditions:
+          - alias: "Time after 2000"
+            condition: time
+            after: "20:00:00"
+        sequence:
+          <<: *turn_on_relaxation_mode
+
+      - alias: "Dinner mode handling"
+        conditions:
+          - alias: "Time after 1800"
+            condition: time
+            after: "18:00:00"
+        sequence:
+          <<: *turn_on_dinner_mode
+
+      - alias: "Default mode handling"
+        conditions:
+          - alias: "Time 0900 -> 1800 Weekends"
+            condition: time
+            after: "09:00:00"
+            before: "18:00:00"
+            weekday:
+              - sat
+              - sun
+        sequence:
+          <<: *turn_on_default_mode
+
+      - alias: "Work mode handling"
+        conditions:
+          - alias: "Time 0800 -> 1700 Weekdays"
+            condition: time
+            after: "08:00:00"
+            before: "17:00:00"
+            weekday:
+              - mon
+              - tue
+              - wed
+              - thu
+              - fri
+        sequence:
+          <<: *turn_on_work_mode
+
       - alias: "Wake-up mode handling"
         conditions:
           or:
@@ -119,62 +175,6 @@ action:
                 - sun
         sequence:
           <<: *turn_on_wakeup_mode
-
-      - alias: "Work mode handling"
-        conditions:
-          - alias: "Time 0800 -> 1700 Weekdays"
-            condition: time
-            after: "08:00:00"
-            before: "17:00:00"
-            weekday:
-              - mon
-              - tue
-              - wed
-              - thu
-              - fri
-        sequence:
-          <<: *turn_on_work_mode
-
-      - alias: "Default mode handling"
-        conditions:
-          - alias: "Time 0900 -> 1800 Weekends"
-            condition: time
-            after: "09:00:00"
-            before: "18:00:00"
-            weekday:
-              - sat
-              - sun
-        sequence:
-          <<: *turn_on_default_mode
-
-      - alias: "Dinner mode handling"
-        conditions:
-          - alias: "Time after 1800"
-            condition: time
-            after: "18:00:00"
-        sequence:
-          <<: *turn_on_dinner_mode
-
-      - alias: "Relaxation mode handling"
-        conditions:
-          - alias: "Time after 2000"
-            condition: time
-            after: "20:00:00"
-        sequence:
-          <<: *turn_on_relaxation_mode
-
-      # Bedtime mode turned on when apple TV turned off at night
-      - alias: "Turn on Bedtime house mode"
-        conditions:
-          - alias: "Time 2130 -> 0300"
-            condition: time
-            after: "21:30:00"
-            before: "00:00:00"
-          - alias: "Apple TV turned off"
-            condition: trigger
-            id: apple_tv_off
-        sequence:
-          <<: *turn_on_bedtime_mode
 
       # Always sleep mode after 3AM before 7AM
       - alias: "Sleep mode handling"
