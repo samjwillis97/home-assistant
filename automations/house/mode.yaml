@@ -14,9 +14,9 @@ triggers:
     event_type:
       - automation_reloaded
 
-  # Every 0 minute
+  # Every hour
   - platform: time_pattern
-    minutes: /0
+    hour: "*"
 
   # Every 30 minute
   - platform: time_pattern
