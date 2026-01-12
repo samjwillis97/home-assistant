@@ -16,7 +16,8 @@ triggers:
 
   # Every hour
   - platform: time_pattern
-    hour: "*"
+    hour: /1
+    minutes: 0
 
   # Every 30 minute
   - platform: time_pattern
