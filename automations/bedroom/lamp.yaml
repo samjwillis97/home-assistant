@@ -1,20 +1,10 @@
-# NOTE
-# When on button is pressed, turn bed
-id: '5ab5f017-59db-4c84-a097-0bfc848cee96'
-alias: "Bedroom: Lamp"
+id: "5ab5f017-59db-4c84-a097-0bfc848cee96"
+alias: "Bedroom: Scene Button"
 mode: queued
 trace:
   stored_traces: 25
 
 triggers:
-  # - platform: homeassistant
-  #   event: start
-  #
-  # - platform: event
-  #   event_type:
-  #     - automation_reloaded
-  #     - scene_reloaded
-
   - id: "switch-on"
     platform: event
     event_type: zha_event
@@ -31,49 +21,79 @@ triggers:
 
 variables:
   anchors:
-    - &turn_off
+    - &turn_off_lamp
       alias: "Turn off lamp"
       service: light.turn_off
       target:
         entity_id: light.bedroom_lamp_light
 
-    - &turn_on
+    - &turn_off_lights
+      alias: "Turn off lights"
+      service: switch.turn_off
+      target:
+        entity_id: switch.bedroom_lights_switch
+
+    - &turn_on_sleep_mode
+      alias: "Change house to sleep mode"
+      service: input_select.select_option
+      target:
+        entity_id: input_select.house_mode
+      data:
+        option: "sleep"
+
+    - &turn_on_lights
+      alias: "Turn on light"
+      service: switch.turn_on
+      target:
+        entity_id: switch.bedroom_lights_switch
+
+    - &turn_on_lamp
       alias: "Turn on lamp"
       service: light.turn_on
       target:
         entity_id: light.bedroom_lamp_light
 
-    # - &choose_scene
-    #   choose:
-    #     - alias: "Activate bedroom lamp night scene in night mode"
-    #       conditions:
-    #         - alias: "When house is in night mode"
-    #           condition: state
-    #           entity_id: input_boolean.house_mode_night
-    #           state: "on"
-    #       sequence:
-    #         - alias: "Activate bedroom lamp night scene"
-    #           <<: *scene
-    #           target:
-    #             entity_id: scene.bedroom_lamp_night
-
 action:
   - choose:
-    - alias: "Turn on when on button pressed"
-      conditions:
-        - condition: trigger
-          id: switch-on
+      - alias: "Turn on when on button pressed"
+        conditions:
+          - condition: trigger
+            id: switch-on
+        sequence:
+          - choose:
+              conditions:
+                or:
+                  - alias: "House Mode - bedtime"
+                    condition: state
+                    entity_id: input_select.house_mode
+                    state: "bedtime"
+                  - alias: "House Mode - sleep"
+                    condition: state
+                    entity_id: input_select.house_mode
+                    state: "sleep"
+              sequence:
+                - *turn_on_lamp
+            default:
+              - *turn_on_lights
 
-      sequence:
-        - *turn_on
-
-    - alias: "Turn off when off button pressed"
-      conditions:
-        - condition: trigger
-          id: switch-off
-
-      sequence:
-        - *turn_off
-
+      - alias: "Turn off when off button pressed"
+        conditions:
+          - condition: trigger
+            id: switch-off
+        sequence:
+          - choose:
+              conditions:
+                - alias: "House Mode - bedtime"
+                  condition: state
+                  entity_id: input_select.house_mode
+                  state: "bedtime"
+              sequence:
+                - *turn_off_lights
+                - *turn_off_lamp
+                - *turn_on_sleep_mode
+            default:
+              - *turn_off_lights
+              - *turn_off_lamp
     default:
-      - *turn_off
+      - *turn_off_lights
+      - *turn_off_lamp

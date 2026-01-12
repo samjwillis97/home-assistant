@@ -58,6 +58,27 @@ variables:
       data:
         option: "wake up"
 
+    - &turn_on_relaxation_mode
+      service: input_select.select_option
+      target:
+        entity_id: input_select.house_mode
+      data:
+        option: "relaxation"
+
+    - &turn_on_dinner_mode
+      service: input_select.select_option
+      target:
+        entity_id: input_select.house_mode
+      data:
+        option: "dinner"
+
+    - &turn_on_sleep_mode
+      service: input_select.select_option
+      target:
+        entity_id: input_select.house_mode
+      data:
+        option: "sleep"
+
     - &turn_on_default_mode
       service: input_select.select_option
       target:
@@ -76,7 +97,7 @@ action:
             state: "on"
         sequence: []
 
-      - alias: "Wake Up mode handling"
+      - alias: "Wake-up mode handling"
         conditions:
           or:
             - alias: "Time 0600 -> 0800 Weekdays"
@@ -116,61 +137,71 @@ action:
 
       - alias: "Default mode handling"
         conditions:
-          or:
-            - alias: "Time 0800 -> 1700 Weekdays"
-              condition: time
-              after: "08:00:00"
-              before: "17:00:00"
-              weekday:
-                - mon
-                - tue
-                - wed
-                - thu
-                - fri
-            - alias: "Time 0900 -> 1800 Weekends"
-              condition: time
-              after: "09:00:00"
-              before: "18:00:00"
-              weekday:
-                - sat
-                - sun
-        sequence:
-          <<: *turn_on_default_mode
-
-      - alias: "Turn on Bedtime house mode"
-        conditions:
-          - alias: "Time 2130 -> 0300"
-            condition: time
-            after: "21:30:00"
-            before: "03:00:00"
-        sequence:
-          - choose:
-              conditions:
-                or:
-                  - alias: "Apple TV turned off"
-                    condition: trigger
-                    id: apple_tv_off
-                  - alias: "House Away turned off"
-                    condition: trigger
-                    id: house_away_turned_off
-              sequence:
-                <<: *turn_on_bedtime_mode
-      - alias: "Turn on Default house mode"
-        conditions:
-          - alias: "Time 0900 -> 2130"
+          - alias: "Time 0900 -> 1800 Weekends"
             condition: time
             after: "09:00:00"
-            before: "21:30:00"
+            before: "18:00:00"
+            weekday:
+              - sat
+              - sun
         sequence:
           <<: *turn_on_default_mode
 
-        # conditions:
-        #   - alias: "Apple TV Turned off"
-        #     condition: trigger
-        #     id: apple_tv_off
-        #   - alias: "Time 2130 -> 0300"
-        #     condition: time
-        #     after: "21:30:00"
-        #     before: "03:00:00"
+      - alias: "Dinner mode handling"
+        conditions:
+          - alias: "Time after 1800"
+            condition: time
+            after: "18:00:00"
+        sequence:
+          <<: *turn_on_dinner_mode
+
+      - alias: "Relaxation mode handling"
+        conditions:
+          - alias: "Time after 2000"
+            condition: time
+            after: "20:00:00"
+        sequence:
+          <<: *turn_on_relaxation_mode
+
+      # Bedtime mode turned on when apple TV turned off at night
+      # OR it hits midnight
+      - alias: "Turn on Bedtime house mode"
+        conditions:
+          or:
+            - and:
+                - alias: "Time 2130 -> 0300"
+                  condition: time
+                  after: "21:30:00"
+                  before: "00:00:00"
+                - alias: "Apple TV turned off"
+                  condition: trigger
+                  id: apple_tv_off
+            - alias: "Time 0000 -> 0300"
+              condition: time
+              after: "00:00:00"
+              before: "03:00:00"
+        sequence:
+          <<: *turn_on_bedtime_mode
+
         # sequence:
-        #   <<: *turn_on_bedtime_mode
+        #   - choose:
+        #       conditions:
+        #         or:
+        #           - alias: "Apple TV turned off"
+        #             condition: trigger
+        #             id: apple_tv_off
+        #           - alias: "House Away turned off"
+        #             condition: trigger
+        #             id: house_away_turned_off
+
+      # Always sleep mode after 3AM
+      - alias: "Sleep mode handling"
+        conditions:
+          - alias: "Time after 0300 if it reaches this point"
+            condition: time
+            after: "03:00:00"
+        sequence:
+          <<: *turn_on_sleep_mode
+
+    default:
+      <<: *turn_on_default_mode
