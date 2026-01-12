@@ -112,7 +112,7 @@ action:
                 - fri
             - alias: "Time 0700 -> 0900 Weekends"
               condition: time
-              after: "06:00:00"
+              after: "07:00:00"
               before: "08:00:00"
               weekday:
                 - sat
@@ -183,23 +183,13 @@ action:
         sequence:
           <<: *turn_on_bedtime_mode
 
-        # sequence:
-        #   - choose:
-        #       conditions:
-        #         or:
-        #           - alias: "Apple TV turned off"
-        #             condition: trigger
-        #             id: apple_tv_off
-        #           - alias: "House Away turned off"
-        #             condition: trigger
-        #             id: house_away_turned_off
-
-      # Always sleep mode after 3AM
+      # Always sleep mode after 3AM before 7AM
       - alias: "Sleep mode handling"
         conditions:
           - alias: "Time after 0300 if it reaches this point"
             condition: time
             after: "03:00:00"
+            before: "07:00:00"
         sequence:
           <<: *turn_on_sleep_mode
 
