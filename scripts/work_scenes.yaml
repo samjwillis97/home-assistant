@@ -16,3 +16,5 @@ sequence:
           - action: scene.turn_on
             target:
               entity_id: scene.study_work
+            data:
+              transition: 5.0
