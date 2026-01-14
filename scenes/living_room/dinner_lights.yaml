@@ -7,6 +7,6 @@ entities:
   light.living_room_lamp:
     state: "on"
     brightness: 217
-    color_temp_kelvin: 2341
+    color_temp_kelvin: 2518
   light.donut_lamp:
     state: "on"

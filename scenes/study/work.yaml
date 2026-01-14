@@ -5,4 +5,4 @@ entities:
   light.study_lamp:
     state: "on"
     brightness: 214
-    color_temp_kelvin: 2645
+    color_temp_kelvin: 2518
