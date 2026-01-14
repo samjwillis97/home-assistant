@@ -1,0 +1,47 @@
+id: "sam-leaving-work-mode"
+alias: "House: Sam Presence During Work"
+description: >-
+  Turn off/on study lights when Sam leaves/arrives during work mode
+mode: queued
+trace:
+  stored_traces: 25
+
+triggers:
+  - id: leaving
+    platform: state
+    entity_id:
+      - input_boolean.sam_home
+    to: "off"
+
+  - id: arriving
+    platform: state
+    entity_id:
+      - input_boolean.sam_home
+    to: "on"
+
+conditions:
+  - condition: state
+    entity_id: input_select.house_mode
+    state: "work"
+
+action:
+  - choose:
+      - alias: "Sam leaving - turn off study lights"
+        conditions:
+          - condition: trigger
+            id: leaving
+        sequence:
+          - service: light.turn_off
+            target:
+              entity_id:
+                - light.study_lights
+                - light.study_lamp
+
+      - alias: "Sam arriving - turn on study work scene"
+        conditions:
+          - condition: trigger
+            id: arriving
+        sequence:
+          - service: scene.turn_on
+            target:
+              entity_id: scene.study_work
