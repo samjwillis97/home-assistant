@@ -1,1 +1,3 @@
 - input_boolean.house_mode_away
+- input_boolean.sam_home
+- input_boolean.maddy_home
