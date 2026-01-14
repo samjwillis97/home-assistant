@@ -18,6 +18,8 @@ variables:
         service: scene.turn_on
         target:
           entity_id: scene.bedroom_night
+        data:
+          transition: 2.5
 
 action:
   - choose:

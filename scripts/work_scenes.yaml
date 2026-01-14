@@ -17,4 +17,4 @@ sequence:
             target:
               entity_id: scene.study_work
             data:
-              transition: 5.0
+              transition: 2.5

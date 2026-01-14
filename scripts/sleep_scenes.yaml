@@ -10,3 +10,5 @@ sequence:
         - scene.study_sleep
         - scene.bedroom_sleep
         - scene.dining_room_sleep
+    data:
+      transition: 2.5
