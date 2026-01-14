@@ -1,5 +1,8 @@
 id: "25632083-d7d0-41f5-90de-0a26332c2bfa"
 alias: "Bedroom: Bedtime"
+labels:
+  - bedroom
+  - scenes
 mode: queued
 trace:
   stored_traces: 25
