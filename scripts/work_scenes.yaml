@@ -1,0 +1,9 @@
+alias: "Activate Work Scenes"
+icon: mdi:briefcase
+
+sequence:
+  - action: scene.turn_on
+    target:
+      entity_id:
+        - scene.dining_room_work
+        - scene.study_work

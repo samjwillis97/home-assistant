@@ -1,0 +1,7 @@
+id: "0b3d87f0-273f-497d-887e-2bf9227327b4"
+name: "Dining Room: Work"
+icon: mdi:briefcase
+entities:
+  light.maddys_desk_lamp_light:
+    state: "on"
+    brightness: 176

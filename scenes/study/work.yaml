@@ -1,0 +1,8 @@
+id: "e474183f-287e-4670-ba78-d32102269931"
+name: "Study: Work"
+icon: mdi:briefcase
+entities:
+  light.study_lamp:
+    state: "on"
+    brightness: 214
+    color_temp_kelvin: 2645
