@@ -20,38 +20,19 @@ triggers:
       command: "off"
 
 variables:
-  anchors:
-    - &turn_off_lamp
-      alias: "Turn off lamp"
-      service: light.turn_off
-      target:
-        entity_id: light.bedroom_lamp_light
+  # Map house modes to corresponding bedroom scenes
+  scene_map:
+    default: "scene.bedroom_default"
+    wake_up: "scene.bedroom_default"
+    work: "scene.bedroom_default"
+    away: "scene.bedroom_away"
+    dinner: "scene.bedroom_default"
+    relaxation: "scene.bedroom_relaxation"
+    bedtime: "scene.bedroom_bed_time"
+    sleep: "scene.bedroom_sleep"
 
-    - &turn_off_lights
-      alias: "Turn off lights"
-      service: switch.turn_off
-      target:
-        entity_id: switch.bedroom_lights_switch
-
-    - &turn_on_sleep_mode
-      alias: "Change house to sleep mode"
-      service: input_select.select_option
-      target:
-        entity_id: input_select.house_mode
-      data:
-        option: "sleep"
-
-    - &turn_on_lights
-      alias: "Turn on light"
-      service: switch.turn_on
-      target:
-        entity_id: switch.bedroom_lights_switch
-
-    - &turn_on_lamp
-      alias: "Turn on lamp"
-      service: light.turn_on
-      target:
-        entity_id: light.bedroom_lamp_light
+  house_mode: "{{ states('input_select.house_mode') }}"
+  target_scene: "{{ scene_map.get(house_mode, 'scene.bedroom_default') }}"
 
 action:
   - choose:
@@ -60,21 +41,10 @@ action:
           - condition: trigger
             id: switch-on
         sequence:
-          - choose:
-              conditions:
-                or:
-                  - alias: "House Mode - bedtime"
-                    condition: state
-                    entity_id: input_select.house_mode
-                    state: "bedtime"
-                  - alias: "House Mode - sleep"
-                    condition: state
-                    entity_id: input_select.house_mode
-                    state: "sleep"
-              sequence:
-                - *turn_on_lamp
-            default:
-              - *turn_on_lights
+          - alias: "Activate scene based on house mode"
+            service: scene.turn_on
+            target:
+              entity_id: "{{ target_scene }}"
 
       - alias: "Turn off when off button pressed"
         conditions:
@@ -82,16 +52,24 @@ action:
             id: switch-off
         sequence:
           - choose:
-              conditions:
-                - alias: "House Mode - bedtime"
-                  condition: state
-                  entity_id: input_select.house_mode
-                  state: "bedtime"
-              sequence:
-                - *turn_on_sleep_mode
+              - alias: "Transition to sleep mode if in bedtime"
+                conditions:
+                  - condition: state
+                    entity_id: input_select.house_mode
+                    state: "bedtime"
+                sequence:
+                  - alias: "Change house to sleep mode"
+                    service: input_select.select_option
+                    target:
+                      entity_id: input_select.house_mode
+                    data:
+                      option: "sleep"
+                  - alias: "Activate sleep scene"
+                    service: scene.turn_on
+                    target:
+                      entity_id: scene.bedroom_sleep
             default:
-              - *turn_off_lights
-              - *turn_off_lamp
-    default:
-      - *turn_off_lights
-      - *turn_off_lamp
+              - alias: "Turn off all bedroom lights"
+                service: scene.turn_on
+                target:
+                  entity_id: scene.bedroom_sleep
