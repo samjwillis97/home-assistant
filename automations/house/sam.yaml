@@ -45,3 +45,5 @@ action:
           - service: scene.turn_on
             target:
               entity_id: scene.study_work
+            data:
+              transition: 2.5
