@@ -29,14 +29,6 @@ variables:
         data:
           option: "away"
 
-    - &turned_off
-      - alias: "Change House Mode to Away"
-        service: input_select.select_option
-        target:
-          entity_id: input_select.house_mode
-        data:
-          option: "default"
-
 action:
   - choose:
       - alias: "House mode turned on"
@@ -46,11 +38,3 @@ action:
             state: "on"
         sequence:
           <<: *turned_on
-
-      - alias: "House mode turned off"
-        conditions:
-          - condition: state
-            entity_id: input_boolean.house_mode_away
-            state: "off"
-        sequence:
-          <<: *turned_off

@@ -89,21 +89,18 @@ variables:
 action:
   - choose:
       # This just means if the house is already in away do not change it.
-      - alias: "Do nothing (away)"
+      # Or because bedtime is only triggered via apple TV turning off, we don't want to switch it automatically
+      - alias: "Do nothing (away or bedtime)"
         conditions:
-          - alias: "House mode Away already on"
-            condition: state
-            entity_id: input_boolean.house_mode_away
-            state: "on"
-        sequence: []
-
-      # Becuase bedtime is only triggered via apple TV turning off, we don't want to switch it automatically
-      - alias: "Do nothing (bedtime)"
-        conditions:
-          - alias: "House mode bedtime on"
-            condition: state
-            entity_id: input_select.house_mode
-            state: "bedtime"
+          or:
+            - alias: "House mode Away already on"
+              condition: state
+              entity_id: input_select.house_mode
+              state: "away"
+            - alias: "House mode bedtime on"
+              condition: state
+              entity_id: input_select.house_mode
+              state: "bedtime"
         sequence: []
 
       # Bedtime mode turned on when apple TV turned off at night
