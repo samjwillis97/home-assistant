@@ -5,6 +5,6 @@ entities:
   switch.bedroom_lights_switch:
     state: "off"
   light.bedroom_lamp_light:
-    brightness: 60
+    brightness: 128
     color_mode: "brightness"
     state: "on"
