@@ -1,6 +1,8 @@
 input_boolean:
   house_mode_away:
     name: House Mode Away
+  holidays:
+    name: On Holidays
   sam_home:
     name: Sam Home
   maddy_home:

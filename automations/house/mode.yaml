@@ -35,6 +35,11 @@ triggers:
       - input_boolean.house_mode_away
     to: "off"
 
+  - platform: state
+    entity_id:
+      - input_boolean.holidays
+    to: ~
+
 variables:
   anchors:
     - &turn_on_bedtime_mode
@@ -150,6 +155,10 @@ action:
 
       - alias: "Work mode handling"
         conditions:
+          - alias: "Not on Holidays"
+            condition: state
+            entity_id: input_boolean.holidays
+            state: "off"
           - alias: "Time 0800 -> 1700 Weekdays"
             condition: time
             after: "08:00:00"
