@@ -44,6 +44,24 @@ jobs:
       - name: Run Prettier check
         run: prettier --check "**/*.{yaml,yml}"
 
+  config-validation:
+    name: Configuration Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Run config validator
+        run: python3 scripts/validate_config.py
+
   home-assistant-config:
     name: Home Assistant Config Check
     runs-on: ubuntu-latest
