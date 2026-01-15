@@ -1,24 +1,20 @@
+---
 blueprint:
   name: ZHA - IKEA four button remote for lights
   description: 'Control lights with an IKEA four button remote (the square ones),
     for use with [ZHA](https://www.home-assistant.io/integrations/zha/).
 
-
     Extends [SwerveShot](https://community.home-assistant.io/u/SwerveShot)''s [version](https://community.home-assistant.io/t/zha-ikea-four-button-remote-for-lights/347657)
     which is based on the work of [frenck](https://community.home-assistant.io/u/frenck)
     with the five button version.
 
-
     Pressing the up button will turn on the lights at the last set brightness (unless
     the force brightness is toggled on in the blueprint).
 
-
     Pressing the down button will turn the lights off again.
-
 
     Pressing and holding the up/down buttons will change the brightness smoothly and
     can be pressed and hold until the brightness is satisfactory.
-
 
     The "left" and "right" buttons can be assigned to a short and long button press
     action. This allows you to assign, e.g., a scene or anything else. Use the left
@@ -43,8 +39,8 @@ blueprint:
       selector:
         target:
           entity:
-          - domain:
-            - light
+            - domain:
+                - light
     force_brightness:
       name: Force turn on brightness
       description: Force the brightness to the set level below, when the "on" button
@@ -62,7 +58,7 @@ blueprint:
           max: 100.0
           mode: slider
           step: 1.0
-          unit_of_measurement: '%'
+          unit_of_measurement: "%"
     hold_time:
       name: Hold Time
       description: Time between the execution of the brighter/darker actions when
@@ -107,94 +103,93 @@ max_exceeded: silent
 variables:
   force_brightness: !input force_brightness
 trigger:
-- platform: event
-  event_type: zha_event
-  event_data:
-    device_id: !input remote
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
 action:
-- variables:
-    command: '{{ trigger.event.data.command }}'
-    cluster_id: '{{ trigger.event.data.cluster_id }}'
-    endpoint_id: '{{ trigger.event.data.endpoint_id }}'
-    args: '{{ trigger.event.data.args }}'
-- choose:
-  - conditions:
-    - '{{ command == ''on'' }}'
-    - '{{ cluster_id == 6 }}'
-    - '{{ endpoint_id == 1 }}'
-    sequence:
-    - choose:
-      - conditions: '{{ force_brightness }}'
+  - variables:
+      command: "{{ trigger.event.data.command }}"
+      cluster_id: "{{ trigger.event.data.cluster_id }}"
+      endpoint_id: "{{ trigger.event.data.endpoint_id }}"
+      args: "{{ trigger.event.data.args }}"
+  - choose:
+      - conditions:
+          - "{{ command == 'on' }}"
+          - "{{ cluster_id == 6 }}"
+          - "{{ endpoint_id == 1 }}"
         sequence:
-        - service: light.turn_on
-          target: !input light
-          data:
-            transition: 1
-            brightness_pct: !input brightness
-      default:
-      - service: light.turn_on
-        target: !input light
-        data:
-          transition: 1
-  - conditions:
-    - '{{ command == ''off'' }}'
-    - '{{ cluster_id == 6 }}'
-    - '{{ endpoint_id == 1 }}'
-    sequence:
-    - service: light.turn_off
-      target: !input light
-      data:
-        transition: 1
-  - conditions:
-    - '{{ command == ''move_with_on_off'' }}'
-    - '{{ cluster_id == 8 }}'
-    - '{{ endpoint_id == 1 }}'
-    sequence:
-    - repeat:
-        count: 10
+          - choose:
+              - conditions: "{{ force_brightness }}"
+                sequence:
+                  - service: light.turn_on
+                    target: !input light
+                    data:
+                      transition: 1
+                      brightness_pct: !input brightness
+            default:
+              - service: light.turn_on
+                target: !input light
+                data:
+                  transition: 1
+      - conditions:
+          - "{{ command == 'off' }}"
+          - "{{ cluster_id == 6 }}"
+          - "{{ endpoint_id == 1 }}"
         sequence:
-        - service: light.turn_on
-          target: !input light
-          data:
-            brightness_step_pct: 10
-            transition: !input hold_time
-        - delay: !input hold_time
-  - conditions:
-    - '{{ command == ''move'' }}'
-    - '{{ cluster_id == 8 }}'
-    - '{{ endpoint_id == 1 }}'
-    sequence:
-    - repeat:
-        count: 10
+          - service: light.turn_off
+            target: !input light
+            data:
+              transition: 1
+      - conditions:
+          - "{{ command == 'move_with_on_off' }}"
+          - "{{ cluster_id == 8 }}"
+          - "{{ endpoint_id == 1 }}"
         sequence:
-        - service: light.turn_on
-          target: !input light
-          data:
-            brightness_step_pct: -10
-            transition: !input hold_time
-        - delay: !input hold_time
-  - conditions:
-    - '{{ command == ''press'' }}'
-    - '{{ cluster_id == 5 }}'
-    - '{{ endpoint_id == 1 }}'
-    - '{{ args == [257, 13, 0] }}'
-    sequence: !input button_left_short
-  - conditions:
-    - '{{ command == ''hold'' }}'
-    - '{{ cluster_id == 5 }}'
-    - '{{ endpoint_id == 1 }}'
-    - '{{ args == [3329, 0] }}'
-    sequence: !input button_left_long
-  - conditions:
-    - '{{ command == ''press'' }}'
-    - '{{ cluster_id == 5 }}'
-    - '{{ endpoint_id == 1 }}'
-    - '{{ args == [256, 13, 0] }}'
-    sequence: !input button_right_short
-  - conditions:
-    - '{{ command == ''hold'' }}'
-    - '{{ cluster_id == 5 }}'
-    - '{{ endpoint_id == 1 }}'
-    - '{{ args == [3328, 0] }}'
-    sequence: !input button_right_long
-
+          - repeat:
+              count: 10
+              sequence:
+                - service: light.turn_on
+                  target: !input light
+                  data:
+                    brightness_step_pct: 10
+                    transition: !input hold_time
+                - delay: !input hold_time
+      - conditions:
+          - "{{ command == 'move' }}"
+          - "{{ cluster_id == 8 }}"
+          - "{{ endpoint_id == 1 }}"
+        sequence:
+          - repeat:
+              count: 10
+              sequence:
+                - service: light.turn_on
+                  target: !input light
+                  data:
+                    brightness_step_pct: -10
+                    transition: !input hold_time
+                - delay: !input hold_time
+      - conditions:
+          - "{{ command == 'press' }}"
+          - "{{ cluster_id == 5 }}"
+          - "{{ endpoint_id == 1 }}"
+          - "{{ args == [257, 13, 0] }}"
+        sequence: !input button_left_short
+      - conditions:
+          - "{{ command == 'hold' }}"
+          - "{{ cluster_id == 5 }}"
+          - "{{ endpoint_id == 1 }}"
+          - "{{ args == [3329, 0] }}"
+        sequence: !input button_left_long
+      - conditions:
+          - "{{ command == 'press' }}"
+          - "{{ cluster_id == 5 }}"
+          - "{{ endpoint_id == 1 }}"
+          - "{{ args == [256, 13, 0] }}"
+        sequence: !input button_right_short
+      - conditions:
+          - "{{ command == 'hold' }}"
+          - "{{ cluster_id == 5 }}"
+          - "{{ endpoint_id == 1 }}"
+          - "{{ args == [3328, 0] }}"
+        sequence: !input button_right_long

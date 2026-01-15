@@ -1,4 +1,5 @@
-id: '9e39e652-c9d4-4490-9382-b5e9eecbb06e'
+---
+id: "9e39e652-c9d4-4490-9382-b5e9eecbb06e"
 alias: "Living Room: Camera"
 description: >-
   Controls the living room camera on/off state
@@ -55,44 +56,44 @@ variables:
 
 action:
   - choose:
-    - alias: "Synchronize with wyze - on"
-      conditions:
-        - and:
-          - condition: trigger
-            id: "wyze-change"
+      - alias: "Synchronize with wyze - on"
+        conditions:
+          - and:
+              - condition: trigger
+                id: "wyze-change"
+              - condition: state
+                state: "on"
+                entity_id: "sensor.living_room_cam_power"
+
+        sequence:
+          - *sync_on
+
+      - alias: "Synchronize with wyze - off"
+        conditions:
+          - and:
+              - condition: trigger
+                id: "wyze-change"
+              - condition: state
+                state: "off"
+                entity_id: "sensor.living_room_cam_power"
+
+        sequence:
+          - *sync_off
+
+      - alias: "Input boolean turned on"
+        conditions:
           - condition: state
+            entity_id: input_boolean.living_room_camera_state
             state: "on"
-            entity_id: "sensor.living_room_cam_power"
 
-      sequence:
-        - *sync_on
+        sequence:
+          - *turn_on
 
-    - alias: "Synchronize with wyze - off"
-      conditions:
-        - and:
-          - condition: trigger
-            id: "wyze-change"
+      - alias: "Input boolean turned off"
+        conditions:
           - condition: state
+            entity_id: input_boolean.living_room_camera_state
             state: "off"
-            entity_id: "sensor.living_room_cam_power"
 
-      sequence:
-        - *sync_off
-
-    - alias: "Input boolean turned on"
-      conditions:
-        - condition: state
-          entity_id: input_boolean.living_room_camera_state
-          state: "on"
-
-      sequence:
-        - *turn_on
-
-    - alias: "Input boolean turned off"
-      conditions:
-        - condition: state
-          entity_id: input_boolean.living_room_camera_state
-          state: "off"
-
-      sequence:
-        - *turn_off
+        sequence:
+          - *turn_off

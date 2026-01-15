@@ -1,3 +1,4 @@
+---
 id: "a9831ca7-3357-48bb-a066-3a226843530f"
 alias: "Study: Lamp"
 description: >-
@@ -54,32 +55,32 @@ variables:
 
 action:
   - choose:
-    - alias: "Turn on when room occupied and low light level"
-      conditions:
-        - alias: "Motion detected or room occupied"
-          or:
-            - condition: trigger
-              id: "motion-detected"
-            - condition: state
-              entity_id: binary_sensor.study_motion_sensor_occupancy
-              state: "on"
-        - condition: numeric_state
-          entity_id: sensor.study_motion_sensor_illuminance
-          below: 25
+      - alias: "Turn on when room occupied and low light level"
+        conditions:
+          - alias: "Motion detected or room occupied"
+            or:
+              - condition: trigger
+                id: "motion-detected"
+              - condition: state
+                entity_id: binary_sensor.study_motion_sensor_occupancy
+                state: "on"
+          - condition: numeric_state
+            entity_id: sensor.study_motion_sensor_illuminance
+            below: 25
 
-      sequence:
-        - *turn_on
+        sequence:
+          - *turn_on
 
-    - alias: "Turn off when room empty"
-      conditions:
-        - or:
-          - condition: trigger
-            id: "room-clear"
-          - condition: state
-            entity_id: binary_sensor.study_motion_sensor_occupancy
-            state: "off"
-            for: 
-              minutes: 30
+      - alias: "Turn off when room empty"
+        conditions:
+          - or:
+              - condition: trigger
+                id: "room-clear"
+              - condition: state
+                entity_id: binary_sensor.study_motion_sensor_occupancy
+                state: "off"
+                for:
+                  minutes: 30
 
-      sequence:
-        - *turn_off
+        sequence:
+          - *turn_off

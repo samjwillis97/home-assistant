@@ -1,6 +1,7 @@
-id: '1706967247387'
+---
+id: "1706967247387"
 alias: "Living Room: Lamp"
-description: ''
+description: ""
 use_blueprint:
   path: zha/ikea-4-button-remote.yaml
   input:
@@ -8,7 +9,7 @@ use_blueprint:
     light:
       device_id: 053681506073ed27b3b2f2e7a527532f
     button_left_short:
-    - device_id: 053681506073ed27b3b2f2e7a527532f
-      domain: light
-      entity_id: 967b9bafea68cd88d52190907da8cce6
-      type: flash
+      - device_id: 053681506073ed27b3b2f2e7a527532f
+        domain: light
+        entity_id: 967b9bafea68cd88d52190907da8cce6
+        type: flash

@@ -1,9 +1,10 @@
+---
 alias: "Toggle House Modes"
 icon: mdi:house
 
 variables:
   anchors:
-    - &modes:
+    - &modes
       - input_boolean.house_mode_away
       - input_boolean.house_mode_sleep
       - input_boolean.house_mode_bedtime

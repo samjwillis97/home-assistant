@@ -1,6 +1,7 @@
-id: '1710558233459'
+---
+id: "1710558233459"
 alias: "Study: Lights"
-description: ''
+description: ""
 use_blueprint:
   path: EPMatt/ikea_e1743.yaml
   input:
@@ -8,10 +9,10 @@ use_blueprint:
     controller_device: 7b82711377bc14f56b57e69c5d16159f
     helper_last_controller_event: input_text.sam_bedroom_switch
     action_button_up_short:
-    - action: switch.turn_on
-      target:
-        entity_id: switch.bedroom_lights_switch
+      - action: switch.turn_on
+        target:
+          entity_id: switch.bedroom_lights_switch
     action_button_down_short:
-    - action: switch.turn_off
-      target:
-        entity_id: switch.bedroom_lights_switch
+      - action: switch.turn_off
+        target:
+          entity_id: switch.bedroom_lights_switch
