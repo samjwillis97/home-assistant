@@ -29,7 +29,7 @@ house_mode_scene_map:
         "conditional": []
       },
       "bedtime": {
-        "always": ["scene.bedroom_night"],
+        "always": ["scene.bedroom_bed_time"],
         "conditional": []
       }
     }
