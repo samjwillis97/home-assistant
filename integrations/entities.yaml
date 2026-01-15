@@ -1,58 +1,10 @@
 ---
-input_boolean:
-  house_mode_away:
-    name: House Mode Away
-  holidays:
-    name: On Holidays
-  sam_home:
-    name: Sam Home
-  maddy_home:
-    name: Maddy Home
-  living_room_camera_state:
-    name: Living Room Camera State
+# Helper entities for Home Assistant configuration
+#
+# This file loads entity definitions from the entities directory
+# Each entity type is organized in its own subdirectory
 
-input_select:
-  house_mode:
-    name: "House Mode"
-    options:
-      - "default"
-      - "wake up"
-      - "work"
-      - "away"
-      - "dinner"
-      - "relaxation"
-      - "bedtime"
-      - "sleep"
-    initial: "default"
-    icon: mdi:home
-
-input_text:
-  house_mode_scene_map:
-    name: "House Mode Scene Map"
-    max: 1000
-    initial: >
-      {
-        "work": {
-          "always": ["scene.dining_room_work"],
-          "conditional": [
-            {"scene": "scene.study_work", "condition": "input_boolean.sam_home"}
-          ]
-        },
-        "sleep": {
-          "always": ["scene.living_room_sleep", "scene.study_sleep", "scene.bedroom_sleep", "scene.dining_room_sleep"],
-          "conditional": []
-        },
-        "away": {
-          "always": ["scene.living_room_away", "scene.dining_room_away", "scene.study_away", "scene.bedroom_away"],
-          "conditional": []
-        },
-        "bedtime": {
-          "always": ["scene.bedroom_night"],
-          "conditional": []
-        }
-      }
-
-shell_command:
-  turn_on_living_room_camera: curl http://localhost:5000/api/living-room-cam/power/on
-  turn_off_living_room_camera: curl http://localhost:5000/api/living-room-cam/power/off
-  get_living_room_camera_power_status: curl http://localhost:5000/api/living-room-cam/power
+input_boolean: !include_dir_merge_named ../entities/input_boolean
+input_select: !include_dir_merge_named ../entities/input_select
+input_text: !include_dir_merge_named ../entities/input_text
+shell_command: !include_dir_merge_named ../entities/shell_command
