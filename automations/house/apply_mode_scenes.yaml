@@ -9,11 +9,6 @@ trace:
 triggers:
   - platform: state
     entity_id: input_select.house_mode
-    to:
-      - work
-      - sleep
-      - away
-      - bedtime
 
 variables:
   mode_map: >
