@@ -58,11 +58,6 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Validate Home Assistant configuration
-        uses: >-
-          docker://homeassistant/home-assistant:${{
-          steps.ha-version.outputs.version }}
+        uses: docker://homeassistant/home-assistant:${{ steps.ha-version.outputs.version }}
         with:
-          args: >-
-            python -m homeassistant
-            --config /github/workspace
-            --script check_config
+          args: python -m homeassistant --config /github/workspace --script check_config
