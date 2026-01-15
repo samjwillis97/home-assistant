@@ -11,11 +11,21 @@ house_mode_scene_map:
         ]
       },
       "sleep": {
-        "always": ["scene.living_room_sleep", "scene.study_sleep", "scene.bedroom_sleep", "scene.dining_room_sleep"],
+        "always": [
+          "scene.living_room_sleep",
+          "scene.study_sleep",
+          "scene.bedroom_sleep",
+          "scene.dining_room_sleep"
+        ],
         "conditional": []
       },
       "away": {
-        "always": ["scene.living_room_away", "scene.dining_room_away", "scene.study_away", "scene.bedroom_away"],
+        "always": [
+          "scene.living_room_away",
+          "scene.dining_room_away",
+          "scene.study_away",
+          "scene.bedroom_away"
+        ],
         "conditional": []
       },
       "bedtime": {
