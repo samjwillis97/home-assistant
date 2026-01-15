@@ -105,16 +105,20 @@ def validate_scene_references(config_dir: Path, scenes: dict) -> bool:
     """Validate that all scene references in automation/scripts exist"""
     errors = []
 
-    # Load scene map
-    scene_map_file = config_dir / 'entities' / 'input_text' / 'house_mode_scene_map.yaml'
-    if scene_map_file.exists():
+    # Load scene map from automation file
+    automation_file = config_dir / 'automations' / 'house' / 'apply_mode_scenes.yaml'
+    if automation_file.exists():
         try:
-            with open(scene_map_file, 'r') as f:
+            with open(automation_file, 'r') as f:
                 data = yaml.safe_load(f)
-                scene_map_json = data['house_mode_scene_map']['initial']
-                scene_map = json.loads(scene_map_json)
+                # Extract mode_map from variables section
+                scene_map = data.get('variables', {}).get('mode_map', {})
 
-                print("\n📋 Checking scene references in house_mode_scene_map:")
+                if not scene_map:
+                    errors.append("Error: mode_map not found in automation variables")
+                    return False
+
+                print("\n📋 Checking scene references in apply_mode_scenes automation:")
 
                 for mode, config in scene_map.items():
                     # Check 'always' scenes
@@ -127,15 +131,16 @@ def validate_scene_references(config_dir: Path, scenes: dict) -> bool:
 
                     # Check 'conditional' scenes
                     for cond in config.get('conditional', []):
-                        scene_id = cond['scene']
-                        if scene_id in scenes:
-                            print(f"  ✅ {mode}: {scene_id} → \"{scenes[scene_id]['name']}\" (conditional)")
-                        else:
-                            errors.append(f"  ❌ {mode}: {scene_id} NOT FOUND (conditional)")
-                            print(errors[-1])
+                        if isinstance(cond, dict) and 'scene' in cond:
+                            scene_id = cond['scene']
+                            if scene_id in scenes:
+                                print(f"  ✅ {mode}: {scene_id} → \"{scenes[scene_id]['name']}\" (conditional)")
+                            else:
+                                errors.append(f"  ❌ {mode}: {scene_id} NOT FOUND (conditional)")
+                                print(errors[-1])
 
         except Exception as e:
-            errors.append(f"Error loading scene map: {e}")
+            errors.append(f"Error loading automation file: {e}")
 
     if errors:
         print("\n❌ Scene reference validation failed!")
