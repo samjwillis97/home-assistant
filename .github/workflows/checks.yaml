@@ -1,0 +1,65 @@
+---
+name: Home Assistant Checks
+
+"on":
+  push:
+    branches:
+      - "**"
+  pull_request: {}
+
+jobs:
+  yamllint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint
+        run: yamllint .
+
+  prettier:
+    name: Prettier Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Prettier
+        run: npm install -g prettier
+
+      - name: Run Prettier check
+        run: prettier --check "**/*.{yaml,yml}"
+
+  home-assistant-config:
+    name: Home Assistant Config Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read Home Assistant version
+        id: ha-version
+        run: |
+          version=$(cat .HA_VERSION)
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Validate Home Assistant configuration
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/config" \
+            homeassistant/home-assistant:${{ steps.ha-version.outputs.version }} \
+            python -m homeassistant --config /config --script check_config

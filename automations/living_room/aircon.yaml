@@ -1,17 +1,18 @@
-id: '1734868824566'
+---
+id: "1734868824566"
 alias: "Living Room: Aircon"
 description: >-
   Controls the aircon in the living room
 
   Turns it off every night at 2AM incase it was forgotten
 trigger:
-- platform: time
-  at: 02:00:00
+  - platform: time
+    at: 02:00:00
 condition: []
 action:
-- device_id: 5768ac591f9b7301e332aee6fd0ced51
-  domain: climate
-  entity_id: 5ea997dbcba3c274512f97da126fe49b
-  type: set_hvac_mode
-  hvac_mode: 'off'
+  - device_id: 5768ac591f9b7301e332aee6fd0ced51
+    domain: climate
+    entity_id: 5ea997dbcba3c274512f97da126fe49b
+    type: set_hvac_mode
+    hvac_mode: "off"
 mode: single
