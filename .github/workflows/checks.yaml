@@ -59,7 +59,24 @@ jobs:
 
       - name: Validate Home Assistant configuration
         run: |
-          docker run --rm \
+          set -e
+          output=$(docker run --rm \
             -v "${{ github.workspace }}:/config" \
             homeassistant/home-assistant:${{ steps.ha-version.outputs.version }} \
-            python -m homeassistant --config /config --script check_config
+            python -m homeassistant --config /config --script check_config 2>&1)
+
+          echo "$output"
+
+          # Check for ERROR in output (case-insensitive)
+          if echo "$output" | grep -iq "ERROR"; then
+            echo "❌ Configuration check found errors"
+            exit 1
+          fi
+
+          # Check for the success message
+          if ! echo "$output" | grep -q "Configuration valid"; then
+            echo "❌ Configuration validation did not complete successfully"
+            exit 1
+          fi
+
+          echo "✅ Configuration check passed"
