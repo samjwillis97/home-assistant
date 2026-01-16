@@ -30,27 +30,7 @@
 
         # Wrapper script for running automation tests
         run-ha-tests = pkgs.writeShellScriptBin "run-ha-tests" ''
-          # Check if venv exists, if not create it
-          if [ ! -d ".venv" ]; then
-            echo "Creating Python virtual environment..."
-            ${pkgs.python313}/bin/python -m venv .venv
-          fi
-
-          # Activate venv and run tests
-          source .venv/bin/activate
-
-          # Install dependencies if needed
-          if ! python -c "import pytest" 2>/dev/null; then
-            echo "Installing test dependencies..."
-            pip install --quiet -r requirements-test.txt
-          fi
-
-          # Run pytest with provided arguments or defaults
-          if [ $# -eq 0 ]; then
-            exec pytest tests/ -v --cov --cov-report=term-missing
-          else
-            exec pytest "$@"
-          fi
+          exec pytest tests/ -v --cov --cov-report=term-missing
         '';
 
         # Pre-commit hooks configuration
@@ -121,24 +101,26 @@
 
         devShells = {
           default = mkShell {
-
             venvDir = "./.venv";
 
             packages = [
               pkgs.docker
-
-              pkgs.python313Packages.venvShellHook
+              pkgs.python313
               pkgs.python313Packages.pip
-              (pkgs.python3.withPackages (
-                python-pkgs: with python-pkgs; [
-                ]
-              ))
 
               validate-ha-config
               run-ha-tests
             ];
 
-            shellHook = ''
+            nativeBuildInputs = [
+              pkgs.python313Packages.venvShellHook
+            ];
+
+            postVenvCreation = ''
+              pip install -r requirements-test.txt
+            '';
+
+            postShellHook = ''
               ${pre-commit-check.shellHook}
 
               echo "🏠 Home Assistant Development Environment"

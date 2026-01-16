@@ -48,3 +48,4 @@ www/community
 .pre-commit-config.yaml
 
 .venv
+.coverage

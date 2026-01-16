@@ -1,7 +1,7 @@
 {
   "hooks": {
     "sessionStart": {
-      "command": "echo '🏠 Home Assistant Configuration Repository'; echo ''; echo '📦 HA Version:' $(cat .HA_VERSION); echo ''; echo '📋 Available validation tools:'; echo '  • yamllint - YAML syntax and style checking'; echo '  • prettier - Code formatting validation'; echo '  • validate-ha-config - Full HA config validation (requires Docker)'; echo ''; echo '💡 Tip: Run checks before committing changes'; echo ''"
+      "command": "echo '🏠 Home Assistant Configuration Repository'; echo ''; echo '📦 HA Version:' $(cat .HA_VERSION); echo ''; echo '📋 Available validation tools:'; echo '  • yamllint - YAML syntax and style checking'; echo '  • prettier - Code formatting validation'; echo '  • validate-ha-config - Full HA config validation (requires Docker)'; echo '  • run-ha-tests - Run automation logic tests with pytest'; echo ''; echo '💡 Tip: Run checks before committing changes'; echo ''"
     },
     "userPromptSubmit": {
       "command": "if git diff --quiet && git diff --cached --quiet; then exit 0; else echo '⚠️  You have uncommitted changes'; git status --short; fi",
@@ -21,9 +21,21 @@
       "command": "./scripts/validate-config.sh",
       "description": "Validate Home Assistant configuration (requires Docker)"
     },
+    "test": {
+      "command": "run-ha-tests",
+      "description": "Run automation logic tests with pytest"
+    },
+    "test-watch": {
+      "command": "run-ha-tests -f",
+      "description": "Run tests in watch mode (re-run on file changes)"
+    },
+    "test-verbose": {
+      "command": "run-ha-tests -vv",
+      "description": "Run tests with verbose output"
+    },
     "check-all": {
-      "command": "echo '🔍 Running all checks...' && echo '' && echo '1️⃣ YAML Linting...' && yamllint . && echo '' && echo '2️⃣ Format Check...' && prettier --check '**/*.{yaml,yml}' && echo '' && echo '✅ All basic checks passed! (Run validate for full HA config check)'",
-      "description": "Run all available checks (yamllint + prettier)"
+      "command": "echo '🔍 Running all checks...' && echo '' && echo '1️⃣ YAML Linting...' && yamllint . && echo '' && echo '2️⃣ Format Check...' && prettier --check '**/*.{yaml,yml}' && echo '' && echo '3️⃣ Automation Tests...' && run-ha-tests && echo '' && echo '✅ All checks passed! (Run validate for full HA config check)'",
+      "description": "Run all available checks (yamllint + prettier + tests)"
     }
   }
 }
