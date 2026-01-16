@@ -64,8 +64,11 @@ class AutomationTestContext:
         # Infer automation entity ID from config if not provided
         if automation_entity_id:
             self.automation_entity_id = automation_entity_id
-        elif isinstance(automation_config, dict) and "id" in automation_config:
-            self.automation_entity_id = f"automation.{automation_config['id']}"
+        elif isinstance(automation_config, dict) and "alias" in automation_config:
+            # Convert alias to entity_id format (lowercase, replace spaces/special chars with underscores)
+            alias = automation_config["alias"]
+            entity_name = alias.lower().replace(" ", "_").replace(":", "").replace("-", "_")
+            self.automation_entity_id = f"automation.{entity_name}"
         else:
             self.automation_entity_id = None
 
