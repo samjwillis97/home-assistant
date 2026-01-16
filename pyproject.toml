@@ -19,6 +19,8 @@ addopts = [
     "-v",
     "--strict-markers",
     "--tb=short",
+    "--ignore=tests/integration_tests",
+    "--ignore=tests/helpers",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",

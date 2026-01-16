@@ -17,10 +17,13 @@ echo ""
 if [ -d "venv" ]; then
     echo -e "${GREEN}Activating virtual environment...${NC}"
     source venv/bin/activate
+elif [ -d ".venv" ]; then
+    echo -e "${GREEN}Activating virtual environment...${NC}"
+    source .venv/bin/activate
 fi
 
 # Check if dependencies are installed
-if ! python -c "import pytest" 2>/dev/null; then
+if ! python -c "import pytest; import yaml" 2>/dev/null; then
     echo -e "${BLUE}Installing test dependencies...${NC}"
     pip install -r requirements-test.txt
 fi

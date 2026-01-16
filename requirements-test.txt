@@ -5,13 +5,13 @@
 #   source venv/bin/activate
 #   pip install -r requirements-test.txt
 
+# Core testing dependencies - lightweight approach
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
-pytest-cov>=4.1.0
-freezegun>=1.4.0
-pyyaml>=6.0
+pytest-cov>=5.0.0
+PyYAML>=6.0
 
-# Home Assistant core and testing framework
-# Note: This will install Home Assistant and its dependencies
-# Installation may take several minutes
-pytest-homeassistant-custom-component>=0.13.0
+# Note: Full Home Assistant testing requires complex dependencies
+# For now, we use a lightweight validation-only approach
+# To use full integration testing, install manually:
+#   pip install pytest-homeassistant-custom-component==0.13.109
