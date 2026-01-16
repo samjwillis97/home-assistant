@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "sessionStart": {
+      "command": "echo '🏠 Home Assistant Configuration Repository'; echo ''; echo '📦 HA Version:' $(cat .HA_VERSION); echo ''; echo '📋 Available validation tools:'; echo '  • yamllint - YAML syntax and style checking'; echo '  • prettier - Code formatting validation'; echo '  • validate-ha-config - Full HA config validation (requires Docker)'; echo ''; echo '💡 Tip: Run checks before committing changes'; echo ''"
+    },
+    "userPromptSubmit": {
+      "command": "if git diff --quiet && git diff --cached --quiet; then exit 0; else echo '⚠️  You have uncommitted changes'; git status --short; fi",
+      "blocking": false
+    }
+  },
+  "customCommands": {
+    "lint": {
+      "command": "echo '🔍 Running YAML linting...' && yamllint . && echo '✅ YAML linting passed!'",
+      "description": "Run yamllint on all YAML files"
+    },
+    "format-check": {
+      "command": "echo '🎨 Checking formatting...' && prettier --check '**/*.{yaml,yml}' && echo '✅ Formatting check passed!'",
+      "description": "Check code formatting with Prettier"
+    },
+    "validate": {
+      "command": "./scripts/validate-config.sh",
+      "description": "Validate Home Assistant configuration (requires Docker)"
+    },
+    "check-all": {
+      "command": "echo '🔍 Running all checks...' && echo '' && echo '1️⃣ YAML Linting...' && yamllint . && echo '' && echo '2️⃣ Format Check...' && prettier --check '**/*.{yaml,yml}' && echo '' && echo '✅ All basic checks passed! (Run validate for full HA config check)'",
+      "description": "Run all available checks (yamllint + prettier)"
+    }
+  }
+}
