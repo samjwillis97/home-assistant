@@ -46,3 +46,5 @@ www/community
 # Temporary ignores
 .old_config
 .pre-commit-config.yaml
+
+.venv
