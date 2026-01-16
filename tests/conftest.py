@@ -134,3 +134,28 @@ def common_entities():
         "binary_sensor.hallway_motion": "off",
         "switch.bedroom_lights_switch": "off",
     }
+
+
+@pytest.fixture
+async def automation_test(hass: HomeAssistant, load_automation):
+    """Provide a simplified test context for automation testing.
+
+    This fixture eliminates most test boilerplate by providing a single
+    interface for entity setup, service mocking, time mocking, and cleanup.
+
+    Example usage:
+        async def test_something(automation_test):
+            await automation_test.setup(
+                automation=("house", "mode.yaml"),
+                entities={"input_select.house_mode": "default"},
+                mock_service=("input_select", "select_option"),
+                time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),
+            )
+            await automation_test.trigger_automation()
+            automation_test.assert_option_selected("work")
+    """
+    from tests.helpers.test_context import AutomationTestContext
+
+    context = AutomationTestContext(hass, load_automation)
+    yield context
+    await context.cleanup()
