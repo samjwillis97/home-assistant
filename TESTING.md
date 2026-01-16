@@ -15,16 +15,32 @@ While Home Assistant's `check_config` validates YAML syntax, it **cannot verify 
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Option 1: Using Nix Flake (Recommended)
+
+If you're using Nix, the testing framework is fully integrated:
 
 ```bash
-pip install -r requirements-test.txt
+# Enter the development shell
+nix develop
+
+# Run tests (automatically sets up venv and installs dependencies)
+run-ha-tests
+
+# Or run directly without entering the shell
+nix run .#test
+
+# Run specific tests
+run-ha-tests tests/automations/test_house_mode.py
+run-ha-tests -k test_work_mode
 ```
 
-### 2. Run Tests
+### Option 2: Using Python Virtual Environment
 
 ```bash
-# Run all tests
+# 1. Install Dependencies
+pip install -r requirements-test.txt
+
+# 2. Run Tests
 pytest tests/
 
 # Run with coverage report

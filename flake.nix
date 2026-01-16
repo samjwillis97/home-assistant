@@ -28,6 +28,31 @@
           exec ${pkgs.bash}/bin/bash ${./scripts/validate-config.sh} "$@"
         '';
 
+        # Wrapper script for running automation tests
+        run-ha-tests = pkgs.writeShellScriptBin "run-ha-tests" ''
+          # Check if venv exists, if not create it
+          if [ ! -d ".venv" ]; then
+            echo "Creating Python virtual environment..."
+            ${pkgs.python313}/bin/python -m venv .venv
+          fi
+
+          # Activate venv and run tests
+          source .venv/bin/activate
+
+          # Install dependencies if needed
+          if ! python -c "import pytest" 2>/dev/null; then
+            echo "Installing test dependencies..."
+            pip install --quiet -r requirements-test.txt
+          fi
+
+          # Run pytest with provided arguments or defaults
+          if [ $# -eq 0 ]; then
+            exec pytest tests/ -v --cov --cov-report=term-missing
+          else
+            exec pytest "$@"
+          fi
+        '';
+
         # Pre-commit hooks configuration
         pre-commit-check = git-hooks.lib.${system}.run {
           src = ./.;
@@ -56,6 +81,16 @@
               pass_filenames = false;
               files = "\\.(yaml|yml)$";
             };
+
+            # Automation logic tests
+            pytest = {
+              enable = true;
+              name = "Automation Logic Tests";
+              entry = "${run-ha-tests}/bin/run-ha-tests";
+              pass_filenames = false;
+              files = "\\.(py|yaml|yml)$";
+              stages = [ "pre-push" ]; # Only run on pre-push to avoid slowing down commits
+            };
           };
         };
       in
@@ -64,6 +99,24 @@
         # Expose the pre-commit checks
         checks = {
           pre-commit = pre-commit-check;
+        };
+
+        # Expose apps for easy running
+        apps = {
+          test = {
+            type = "app";
+            program = "${run-ha-tests}/bin/run-ha-tests";
+          };
+          validate = {
+            type = "app";
+            program = "${validate-ha-config}/bin/validate-ha-config";
+          };
+        };
+
+        # Expose packages
+        packages = {
+          run-ha-tests = run-ha-tests;
+          validate-ha-config = validate-ha-config;
         };
 
         devShells = {
@@ -82,15 +135,22 @@
               ))
 
               validate-ha-config
+              run-ha-tests
             ];
 
             shellHook = ''
               ${pre-commit-check.shellHook}
-              
+
               echo "🏠 Home Assistant Development Environment"
               echo ""
               echo "Available commands:"
               echo "  validate-ha-config - Validate Home Assistant configuration using Docker"
+              echo "  run-ha-tests       - Run automation logic tests with pytest"
+              echo ""
+              echo "Testing shortcuts:"
+              echo "  run-ha-tests                    - Run all tests with coverage"
+              echo "  run-ha-tests tests/automations/ - Run specific test directory"
+              echo "  run-ha-tests -k test_name       - Run tests matching pattern"
               echo ""
             '';
           };

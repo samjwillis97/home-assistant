@@ -8,16 +8,37 @@ While Home Assistant lacks a dedicated YAML automation testing framework, we can
 
 ## Quick Start
 
-### Install Dependencies
+### Using Nix (Recommended)
+
+If you're using Nix, testing is fully integrated into the development environment:
 
 ```bash
-pip install -r requirements-test.txt
+# Enter development shell
+nix develop
+
+# Run tests (venv and dependencies handled automatically)
+run-ha-tests
+
+# Run specific tests
+run-ha-tests tests/automations/test_house_mode.py
+run-ha-tests -k test_work_mode
+
+# Or run without entering the shell
+nix run .#test
 ```
 
-### Run Tests
+The `run-ha-tests` command automatically:
+- Creates `.venv` if it doesn't exist
+- Installs dependencies from `requirements-test.txt`
+- Runs pytest with coverage by default
+
+### Using Python/pip Directly
 
 ```bash
-# Run all tests
+# Install Dependencies
+pip install -r requirements-test.txt
+
+# Run Tests
 pytest tests/
 
 # Run with verbose output

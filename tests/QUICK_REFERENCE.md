@@ -4,6 +4,18 @@ Quick reference for common testing patterns and commands.
 
 ## Setup
 
+### Using Nix (Recommended)
+
+```bash
+# Enter development shell (includes all testing tools)
+nix develop
+
+# Tests are ready to run - venv and dependencies auto-managed
+run-ha-tests
+```
+
+### Using Python/pip
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
@@ -11,6 +23,21 @@ pip install -r requirements-test.txt
 ```
 
 ## Running Tests
+
+### With Nix
+
+```bash
+# Inside nix develop shell
+run-ha-tests                              # All tests with coverage
+run-ha-tests tests/automations/           # Specific directory
+run-ha-tests -k test_work_mode            # Pattern matching
+run-ha-tests tests/automations/test_house_mode.py::test_work_mode_on_weekday_morning  # Specific test
+
+# Outside shell
+nix run .#test                            # All tests with coverage
+```
+
+### With Python/pip
 
 ```bash
 # All tests
