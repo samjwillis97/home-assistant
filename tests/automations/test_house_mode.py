@@ -77,16 +77,20 @@ async def test_no_bedtime_mode_when_apple_tv_off_during_day(
     # Load the automation
     automation_config = load_automation("house", "mode.yaml")
 
-    # Set up automation
-    await setup_automation(hass, automation_config)
-
     # Set time to 14:00 (outside bedtime window)
     target_time = datetime(2025, 1, 15, 14, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-    async_fire_time_changed(hass, target_time)
-    await hass.async_block_till_done()
 
-    # Turn off Apple TV
-    await trigger_state_change(hass, "media_player.lounge_room", "off", "playing")
+    # Mock the current time
+    with patch("homeassistant.util.dt.now", return_value=target_time):
+        # Set up automation
+        await setup_automation(hass, automation_config)
+
+        # Fire time changed event
+        async_fire_time_changed(hass, target_time)
+        await hass.async_block_till_done()
+
+        # Turn off Apple TV
+        await trigger_state_change(hass, "media_player.lounge_room", "off", "playing")
 
     # Bedtime should NOT be triggered (other modes may be)
     # If any calls were made, they should not be for bedtime
