@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from unittest.mock import patch
+from freezegun import freeze_time
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import (
     async_mock_service,
@@ -80,8 +81,8 @@ async def test_no_bedtime_mode_when_apple_tv_off_during_day(
     # Set time to 14:00 (outside bedtime window)
     target_time = datetime(2025, 1, 15, 14, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
 
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
+    # Freeze time to 14:00 for condition evaluation
+    with freeze_time("2025-01-15 14:00:00"):
         # Set up automation
         await setup_automation(hass, automation_config)
 
