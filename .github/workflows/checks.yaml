@@ -53,3 +53,29 @@ jobs:
 
       - name: Validate Home Assistant configuration
         run: ./scripts/validate-config.sh
+
+  pytest:
+    name: Automation Logic Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-test.txt
+
+      - name: Run pytest
+        run: pytest tests/ -v --cov --cov-report=term-missing
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          fail_ci_if_error: false
