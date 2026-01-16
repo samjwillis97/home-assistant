@@ -51,15 +51,5 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Read Home Assistant version
-        id: ha-version
-        run: |
-          version=$(cat .HA_VERSION)
-          echo "version=$version" >> $GITHUB_OUTPUT
-
       - name: Validate Home Assistant configuration
-        run: |
-          docker run --rm \
-            -v "${{ github.workspace }}:/config" \
-            homeassistant/home-assistant:${{ steps.ha-version.outputs.version }} \
-            python -m homeassistant --config /config --script check_config
+        run: ./scripts/validate-config.sh

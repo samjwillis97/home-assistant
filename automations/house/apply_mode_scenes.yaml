@@ -1,0 +1,70 @@
+---
+id: "house_apply_mode_scenes"
+alias: "House: Apply Mode Scenes"
+description: "Automatically activate scenes when house mode changes"
+mode: queued
+trace:
+  stored_traces: 25
+
+triggers:
+  - platform: state
+    entity_id: input_select.house_mode
+
+variables:
+  # Scene mapping: defines which scenes to activate for each mode
+  mode_map:
+    work:
+      always:
+        - scene.dining_room_work
+      conditional:
+        - scene: scene.study_work
+          condition: input_boolean.sam_home
+    sleep:
+      always:
+        - scene.living_room_sleep
+        - scene.study_sleep
+        - scene.bedroom_sleep
+        - scene.dining_room_sleep
+      conditional: []
+    away:
+      always:
+        - scene.living_room_away
+        - scene.dining_room_away
+        - scene.study_away
+        - scene.bedroom_away
+      conditional: []
+    bedtime:
+      always:
+        - scene.bedroom_bed_time
+      conditional: []
+
+  current_mode: "{{ trigger.to_state.state }}"
+  mode_config: "{{ mode_map.get(current_mode, {}) }}"
+  always_scenes: "{{ mode_config.get('always', []) }}"
+  conditional_scenes: "{{ mode_config.get('conditional', []) }}"
+
+action:
+  # Activate all "always" scenes
+  - if:
+      - condition: template
+        value_template: "{{ always_scenes | length > 0 }}"
+    then:
+      - action: scene.turn_on
+        target:
+          entity_id: "{{ always_scenes }}"
+        data:
+          transition: 2.5
+
+  # Activate conditional scenes if their conditions are met
+  - repeat:
+      for_each: "{{ conditional_scenes }}"
+      sequence:
+        - if:
+            - condition: template
+              value_template: "{{ is_state(repeat.item.condition, 'on') }}"
+          then:
+            - action: scene.turn_on
+              target:
+                entity_id: "{{ repeat.item.scene }}"
+              data:
+                transition: 2.5
