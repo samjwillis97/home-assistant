@@ -28,6 +28,11 @@
           exec ${pkgs.bash}/bin/bash ${./scripts/validate-config.sh} "$@"
         '';
 
+        # Wrapper script for running automation tests
+        run-ha-tests = pkgs.writeShellScriptBin "run-ha-tests" ''
+          exec pytest tests/ -v --cov --cov-report=term-missing
+        '';
+
         # Pre-commit hooks configuration
         pre-commit-check = git-hooks.lib.${system}.run {
           src = ./.;
@@ -55,6 +60,17 @@
               entry = "${validate-ha-config}/bin/validate-ha-config";
               pass_filenames = false;
               files = "\\.(yaml|yml)$";
+              stages = [ "pre-push" ];
+            };
+
+            # Automation logic tests
+            pytest = {
+              enable = false;
+              name = "Automation Logic Tests";
+              entry = "pytest tests/";
+              pass_filenames = false;
+              files = "\\.(py|yaml|yml)$";
+              stages = [ "pre-push" ];
             };
           };
         };
@@ -66,31 +82,59 @@
           pre-commit = pre-commit-check;
         };
 
+        # Expose apps for easy running
+        apps = {
+          test = {
+            type = "app";
+            program = "${run-ha-tests}/bin/run-ha-tests";
+          };
+          validate = {
+            type = "app";
+            program = "${validate-ha-config}/bin/validate-ha-config";
+          };
+        };
+
+        # Expose packages
+        packages = {
+          run-ha-tests = run-ha-tests;
+          validate-ha-config = validate-ha-config;
+        };
+
         devShells = {
           default = mkShell {
-
             venvDir = "./.venv";
 
             packages = [
               pkgs.docker
-
-              pkgs.python313Packages.venvShellHook
-              pkgs.python313Packages.pip
-              (pkgs.python3.withPackages (
-                python-pkgs: with python-pkgs; [
-                ]
-              ))
-
               validate-ha-config
+              run-ha-tests
             ];
 
-            shellHook = ''
+            nativeBuildInputs = [
+              pkgs.python313
+              pkgs.python313Packages.pip
+              pkgs.python313Packages.venvShellHook
+            ];
+
+            postVenvCreation = ''
+              pip install -r requirements-test.txt
+            '';
+
+            postShellHook = ''
+              export LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib/
+
               ${pre-commit-check.shellHook}
-              
+
               echo "🏠 Home Assistant Development Environment"
               echo ""
               echo "Available commands:"
               echo "  validate-ha-config - Validate Home Assistant configuration using Docker"
+              echo "  run-ha-tests       - Run automation logic tests with pytest"
+              echo ""
+              echo "Testing shortcuts:"
+              echo "  run-ha-tests                    - Run all tests with coverage"
+              echo "  run-ha-tests tests/automations/ - Run specific test directory"
+              echo "  run-ha-tests -k test_name       - Run tests matching pattern"
               echo ""
             '';
           };
