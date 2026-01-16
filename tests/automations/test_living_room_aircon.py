@@ -42,6 +42,15 @@ async def test_aircon_turns_off_at_2am(hass: HomeAssistant, load_automation):
             blocking=True,
         )
 
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.living_room_aircon"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     # Verify the service was called
     assert len(calls) == 1
     last_call = calls[-1]
@@ -69,6 +78,15 @@ async def test_aircon_does_not_turn_off_before_2am(
         await setup_automation(hass, automation_config)
         await hass.async_block_till_done()
 
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.living_room_aircon"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     # Verify no calls were made
     assert_service_not_called(calls)
 
@@ -88,6 +106,15 @@ async def test_aircon_does_not_turn_off_after_2am(hass: HomeAssistant, load_auto
     with patch("homeassistant.util.dt.now", return_value=target_time):
         # Set up the automation at 3:00 AM (after the trigger time)
         await setup_automation(hass, automation_config)
+        await hass.async_block_till_done()
+
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.living_room_aircon"},
+            blocking=True,
+        )
         await hass.async_block_till_done()
 
     # Verify no calls were made (trigger time has passed)

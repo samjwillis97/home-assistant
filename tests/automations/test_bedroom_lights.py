@@ -41,6 +41,15 @@ async def test_button_up_turns_lights_on(hass: HomeAssistant, load_automation, s
     )
     await hass.async_block_till_done()
 
+    # Clean up: turn off automation to cancel timers
+    await hass.services.async_call(
+        "automation",
+        "turn_off",
+        {"entity_id": "automation.study_lights"},
+        blocking=True,
+    )
+    await hass.async_block_till_done()
+
     # In a real scenario with the full blueprint logic, this would trigger
     # For now, this test serves as a template for blueprint testing
 
@@ -68,6 +77,15 @@ async def test_button_down_turns_lights_off(hass: HomeAssistant, load_automation
             "device_id": "7b82711377bc14f56b57e69c5d16159f",
             "command": "off",
         },
+    )
+    await hass.async_block_till_done()
+
+    # Clean up: turn off automation to cancel timers
+    await hass.services.async_call(
+        "automation",
+        "turn_off",
+        {"entity_id": "automation.study_lights"},
+        blocking=True,
     )
     await hass.async_block_till_done()
 
