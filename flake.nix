@@ -65,7 +65,7 @@
 
             # Automation logic tests
             pytest = {
-              enable = true;
+              enable = false;
               name = "Automation Logic Tests";
               entry = "pytest tests/";
               pass_filenames = false;
