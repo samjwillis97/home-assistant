@@ -106,14 +106,13 @@
 
             packages = [
               pkgs.docker
-              pkgs.python313
-              pkgs.python313Packages.pip
-
               validate-ha-config
               run-ha-tests
             ];
 
             nativeBuildInputs = [
+              pkgs.python313
+              pkgs.python313Packages.pip
               pkgs.python313Packages.venvShellHook
             ];
 
@@ -122,6 +121,8 @@
             '';
 
             postShellHook = ''
+              export LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib/
+
               ${pre-commit-check.shellHook}
 
               echo "🏠 Home Assistant Development Environment"
