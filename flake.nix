@@ -60,16 +60,17 @@
               entry = "${validate-ha-config}/bin/validate-ha-config";
               pass_filenames = false;
               files = "\\.(yaml|yml)$";
+              stages = [ "pre-push" ];
             };
 
             # Automation logic tests
             pytest = {
               enable = true;
               name = "Automation Logic Tests";
-              entry = "${run-ha-tests}/bin/run-ha-tests";
+              entry = "pytest tests/";
               pass_filenames = false;
               files = "\\.(py|yaml|yml)$";
-              stages = [ "pre-push" ]; # Only run on pre-push to avoid slowing down commits
+              stages = [ "pre-push" ];
             };
           };
         };

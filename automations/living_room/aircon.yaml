@@ -10,9 +10,9 @@ trigger:
     at: 02:00:00
 condition: []
 action:
-  - device_id: 5768ac591f9b7301e332aee6fd0ced51
-    domain: climate
-    entity_id: 5ea997dbcba3c274512f97da126fe49b
-    type: set_hvac_mode
-    hvac_mode: "off"
+  - service: climate.set_hvac_mode
+    target:
+      entity_id: climate.living_room_aircon
+    data:
+      hvac_mode: "off"
 mode: single

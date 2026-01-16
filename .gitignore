@@ -49,3 +49,6 @@ www/community
 
 .venv
 .coverage
+
+.pytest_cache
+.ruff_cache
