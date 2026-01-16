@@ -51,6 +51,15 @@ async def test_bedtime_mode_when_apple_tv_off_at_night(
         # Turn off Apple TV
         await trigger_state_change(hass, "media_player.lounge_room", "off", "playing")
 
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.house_mode_control"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     # Verify bedtime mode was selected
     assert len(calls) == 1
     last_call = calls[-1]
@@ -90,6 +99,15 @@ async def test_no_bedtime_mode_when_apple_tv_off_during_day(
 
         # Turn off Apple TV
         await trigger_state_change(hass, "media_player.lounge_room", "off", "playing")
+
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.house_mode_control"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
 
     # Bedtime should NOT be triggered (other modes may be)
     # If any calls were made, they should not be for bedtime
@@ -140,6 +158,15 @@ async def test_work_mode_on_weekday_morning(
             blocking=True,
         )
 
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.house_mode_control"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     # Verify work mode was selected
     assert len(calls) >= 1
     # The last call should be work mode
@@ -173,6 +200,15 @@ async def test_no_work_mode_on_holidays(
     # 2025-01-20 is a Monday
     target_time = datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
     async_fire_time_changed(hass, target_time)
+    await hass.async_block_till_done()
+
+    # Clean up: turn off automation to cancel timers
+    await hass.services.async_call(
+        "automation",
+        "turn_off",
+        {"entity_id": "automation.house_mode_control"},
+        blocking=True,
+    )
     await hass.async_block_till_done()
 
     # Work mode should NOT be triggered
@@ -223,6 +259,15 @@ async def test_wakeup_mode_on_weekday_morning(
             blocking=True,
         )
 
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.house_mode_control"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     # Verify wake-up mode was selected
     assert len(calls) >= 1
     last_call = calls[-1]
@@ -269,6 +314,15 @@ async def test_wakeup_mode_on_weekend_morning(
             blocking=True,
         )
 
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.house_mode_control"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     # Verify wake-up mode was selected
     assert len(calls) >= 1
     last_call = calls[-1]
@@ -313,6 +367,15 @@ async def test_sleep_mode_in_early_morning(
             {"entity_id": "automation.house_mode_control"},
             blocking=True,
         )
+
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.house_mode_control"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
 
     # Verify sleep mode was selected
     assert len(calls) >= 1
@@ -359,6 +422,15 @@ async def test_relaxation_mode_in_evening(
             blocking=True,
         )
 
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.house_mode_control"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     # Verify relaxation mode was selected
     assert len(calls) >= 1
     last_call = calls[-1]
@@ -404,6 +476,15 @@ async def test_dinner_mode_in_evening(
             blocking=True,
         )
 
+        # Clean up: turn off automation to cancel timers
+        await hass.services.async_call(
+            "automation",
+            "turn_off",
+            {"entity_id": "automation.house_mode_control"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     # Verify dinner mode was selected
     assert len(calls) >= 1
     last_call = calls[-1]
@@ -436,6 +517,15 @@ async def test_away_mode_prevents_automatic_mode_changes(
     # 2025-01-20 is a Monday
     target_time = datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
     async_fire_time_changed(hass, target_time)
+    await hass.async_block_till_done()
+
+    # Clean up: turn off automation to cancel timers
+    await hass.services.async_call(
+        "automation",
+        "turn_off",
+        {"entity_id": "automation.house_mode_control"},
+        blocking=True,
+    )
     await hass.async_block_till_done()
 
     # No mode changes should occur (sequence is empty for away mode condition)
@@ -472,6 +562,15 @@ async def test_returning_home_from_away_changes_mode(
 
     # Turn off away mode (returning home)
     await trigger_state_change(hass, "input_boolean.house_mode_away", "off", "on")
+
+    # Clean up: turn off automation to cancel timers
+    await hass.services.async_call(
+        "automation",
+        "turn_off",
+        {"entity_id": "automation.house_mode_control"},
+        blocking=True,
+    )
+    await hass.async_block_till_done()
 
     # Mode should be changed (likely to work mode given the time)
     assert len(calls) >= 1
