@@ -35,6 +35,7 @@ class AutomationTestContext:
         entities: dict[str, str] | None = None,
         mock_service: tuple[str, str] | None = None,
         time: datetime | None = None,
+        register_input_select_service: bool = False,
         automation_entity_id: str | None = None,
     ):
         """Set up the test with all common boilerplate.
@@ -44,6 +45,7 @@ class AutomationTestContext:
             entities: Dictionary of entity_id -> initial_state to set up
             mock_service: Tuple of (domain, service) to mock, e.g. ("input_select", "select_option")
             time: Optional datetime to mock as current time
+            register_input_select_service: If True, register working input_select.select_option service
             automation_entity_id: Optional custom automation entity ID for cleanup
         """
         # Set up entities
@@ -52,10 +54,23 @@ class AutomationTestContext:
                 self.hass.states.async_set(entity_id, state)
             await self.hass.async_block_till_done()
 
-        # Mock service
+        # Mock service for call tracking
         if mock_service:
             domain, service = mock_service
             self.service_calls = async_mock_service(self.hass, domain, service)
+
+        # Register working input_select service if requested
+        if register_input_select_service:
+            async def handle_select_option(call):
+                """Update entity state when select_option is called."""
+                entity_id = call.data.get("entity_id")
+                option = call.data.get("option")
+                if isinstance(entity_id, list):
+                    entity_id = entity_id[0]
+                if entity_id and option:
+                    self.hass.states.async_set(entity_id, option)
+
+            self.hass.services.async_register("input_select", "select_option", handle_select_option)
 
         # Load automation config
         category, filename = automation
@@ -117,6 +132,8 @@ class AutomationTestContext:
 
         self.hass.states.async_set(entity_id, new_state)
         await self.hass.async_block_till_done()
+        # Give automation time to process the state change event
+        await self.hass.async_block_till_done()
 
     async def fire_event(self, event_type: str, event_data: dict[str, Any] | None = None):
         """Fire an event on the Home Assistant bus.
@@ -126,6 +143,25 @@ class AutomationTestContext:
             event_data: Optional event data dictionary
         """
         self.hass.bus.async_fire(event_type, event_data or {})
+        await self.hass.async_block_till_done()
+
+    async def advance_time(self, new_time: datetime):
+        """Advance the mocked time and fire time changed event.
+
+        Args:
+            new_time: New datetime to advance to
+        """
+        if not self._time_patch:
+            raise ValueError("Cannot advance time: time mocking was not set up in setup()")
+
+        # Update the time patch to return the new time
+        self._time_patch.__exit__(None, None, None)
+        self._target_time = new_time
+        self._time_patch = patch("homeassistant.util.dt.now", return_value=new_time)
+        self._time_patch.__enter__()
+
+        # Fire time changed event
+        async_fire_time_changed(self.hass, new_time)
         await self.hass.async_block_till_done()
 
     async def cleanup(self):

@@ -196,6 +196,8 @@ async def test_away_mode_prevents_automatic_mode_changes(automation_test):
         time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
 
+    await automation_test.trigger_automation()
+
     # No mode changes should occur
     automation_test.assert_no_service_calls()
 
@@ -218,3 +220,79 @@ async def test_returning_home_from_away_changes_mode(automation_test):
 
     # Mode should be changed (not away)
     automation_test.assert_option_not_selected("away")
+
+
+async def test_full_weekday_mode_transitions(automation_test):
+    """Test complete 24-hour cycle through all modes on a weekday."""
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
+            "input_select.house_mode": "sleep",
+            "input_boolean.house_mode_away": "off",
+            "input_boolean.holidays": "off",
+            "media_player.lounge_room": "off",
+        },
+        register_input_select_service=True,
+        time=datetime(2025, 1, 19, 22, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Sunday 22:30
+    )
+
+    await automation_test.trigger_automation()
+
+    # 22:30 - Sleep mode (protected, no change)
+    assert automation_test.hass.states.get("input_select.house_mode").state == "sleep"
+
+    # 00:30 - Sleep mode  - should still be on
+    await automation_test.advance_time(datetime(2025, 1, 20, 0, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "sleep"
+
+    # 02:30 - Sleep mode (02:00-07:00)
+    await automation_test.advance_time(datetime(2025, 1, 20, 2, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "sleep"
+
+    # 06:30 - Wake up mode (06:00-08:00 weekdays)
+    await automation_test.advance_time(datetime(2025, 1, 20, 6, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "wake up"
+
+    # 08:30 - Work mode (08:00-17:00 weekdays, not on holidays)
+    await automation_test.advance_time(datetime(2025, 1, 20, 8, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "work"
+
+    # 12:00 - Leave house (change to away mode)
+    await automation_test.advance_time(datetime(2025, 1, 20, 12, 00, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.state_change("input_boolean.house_mode_away", "on", "off")
+    automation_test.hass.states.async_set("input_select.house_mode", "away")
+    assert automation_test.hass.states.get("input_select.house_mode").state == "away"
+
+    # 13:00 - Should still be away
+    await automation_test.advance_time(datetime(2025, 1, 20, 13, 00, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "away"
+
+    # 13:30 - Return home (should exit away mode)
+    await automation_test.advance_time(datetime(2025, 1, 20, 13, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.state_change("input_boolean.house_mode_away", "off", "on")
+    assert automation_test.hass.states.get("input_select.house_mode").state == "work"
+
+    # 17:30 - Default mode (after work, before dinner)
+    await automation_test.advance_time(datetime(2025, 1, 20, 17, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "default"
+
+    # 18:30 - Dinner mode (18:00-20:00)
+    await automation_test.advance_time(datetime(2025, 1, 20, 18, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "dinner"
+
+    # 20:30 - Relaxation mode (20:00+)
+    await automation_test.advance_time(datetime(2025, 1, 20, 20, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "relaxation"
+
+    # 22:00 - Apple TV turns off -> Bedtime mode (21:00-00:00)
+    await automation_test.advance_time(datetime(2025, 1, 20, 22, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.state_change("media_player.lounge_room", "off", "playing")
+    assert automation_test.hass.states.get("input_select.house_mode").state == "bedtime"
