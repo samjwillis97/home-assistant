@@ -202,6 +202,100 @@ async def test_away_mode_prevents_automatic_mode_changes(automation_test):
     automation_test.assert_no_service_calls()
 
 
+async def test_away_mode_not_overridden_during_wakeup_time_weekday(automation_test):
+    """Test that away mode is NOT overridden by wake-up time on weekdays.
+
+    This addresses the bug where wake-up time patterns (06:00-08:00) would
+    override away mode. Away mode should ONLY be cleared when house_mode_away
+    is explicitly turned off, never by time patterns.
+    """
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
+            "input_select.house_mode": "away",
+            "input_boolean.house_mode_away": "on",
+            "input_boolean.holidays": "off",
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 20, 7, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 07:00 (wake-up time)
+    )
+
+    await automation_test.trigger_automation()
+
+    # No mode changes should occur - away mode should remain
+    automation_test.assert_no_service_calls()
+
+
+async def test_away_mode_not_overridden_during_wakeup_time_weekend(automation_test):
+    """Test that away mode is NOT overridden by wake-up time on weekends.
+
+    This addresses the bug where wake-up time patterns (07:00-09:00) would
+    override away mode on weekends. Away mode should ONLY be cleared when
+    house_mode_away is explicitly turned off, never by time patterns.
+    """
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
+            "input_select.house_mode": "away",
+            "input_boolean.house_mode_away": "on",
+            "input_boolean.holidays": "off",
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 18, 7, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Saturday 07:30 (wake-up time)
+    )
+
+    await automation_test.trigger_automation()
+
+    # No mode changes should occur - away mode should remain
+    automation_test.assert_no_service_calls()
+
+
+async def test_wakeup_time_overrides_sleep_mode(automation_test):
+    """Test that wake-up time CAN override sleep mode (unlike away mode).
+
+    This ensures that the fix for away mode protection doesn't break
+    the intended behavior where wake-up time should transition from sleep.
+    """
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
+            "input_select.house_mode": "sleep",
+            "input_boolean.house_mode_away": "off",
+            "input_boolean.holidays": "off",
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 20, 7, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 07:00 (wake-up time)
+    )
+
+    await automation_test.trigger_automation()
+
+    # Wake-up mode should be activated (overriding sleep)
+    automation_test.assert_option_selected("wake up")
+
+
+async def test_wakeup_time_overrides_bedtime_mode(automation_test):
+    """Test that wake-up time CAN override bedtime mode (unlike away mode).
+
+    This ensures that the fix for away mode protection doesn't break
+    the intended behavior where wake-up time should transition from bedtime.
+    """
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
+            "input_select.house_mode": "bedtime",
+            "input_boolean.house_mode_away": "off",
+            "input_boolean.holidays": "off",
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 18, 8, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Saturday 08:00 (wake-up time)
+    )
+
+    await automation_test.trigger_automation()
+
+    # Wake-up mode should be activated (overriding bedtime)
+    automation_test.assert_option_selected("wake up")
+
+
 async def test_returning_home_from_away_changes_mode(automation_test):
     """Test that when returning home from away, mode is updated appropriately."""
     await automation_test.setup(
