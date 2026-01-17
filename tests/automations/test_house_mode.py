@@ -1,579 +1,297 @@
 """Tests for House Mode Control automation."""
 
 from datetime import datetime
-from unittest.mock import patch
-from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.common import (
-    async_mock_service,
-    async_fire_time_changed,
-)
 from homeassistant.util import dt as dt_util
-from tests.helpers.automation_helpers import (
-    setup_automation,
-    trigger_state_change,
-    assert_service_called,
-    assert_service_not_called,
-)
 
 
-async def test_bedtime_mode_when_apple_tv_off_at_night(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_bedtime_mode_when_apple_tv_off_at_night(automation_test):
     """Test that bedtime mode is activated when Apple TV turns off between 21:00-00:00."""
-    # Set up entities
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "off",
             "media_player.lounge_room": "playing",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 15, 21, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Set time to 21:30 (during bedtime window)
-    target_time = datetime(2025, 1, 15, 21, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
-        # Set up automation
-        await setup_automation(hass, automation_config)
-
-        # Fire time changed event
-        async_fire_time_changed(hass, target_time)
-        await hass.async_block_till_done()
-
-        # Turn off Apple TV
-        await trigger_state_change(hass, "media_player.lounge_room", "off", "playing")
-
-        # Clean up: turn off automation to cancel timers
-        await hass.services.async_call(
-            "automation",
-            "turn_off",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
+    # Turn off Apple TV
+    await automation_test.state_change("media_player.lounge_room", "off", "playing")
 
     # Verify bedtime mode was selected
-    assert len(calls) == 1
-    last_call = calls[-1]
-    assert last_call.data.get("option") == "bedtime"
+    automation_test.assert_option_selected("bedtime")
 
 
-async def test_no_bedtime_mode_when_apple_tv_off_during_day(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_no_bedtime_mode_when_apple_tv_off_during_day(automation_test):
     """Test that bedtime mode is NOT activated when Apple TV turns off during the day."""
-    # Set up entities
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "off",
             "media_player.lounge_room": "playing",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 15, 14, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
+    # Turn off Apple TV
+    await automation_test.state_change("media_player.lounge_room", "off", "playing")
 
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Set time to 14:00 (outside bedtime window)
-    target_time = datetime(2025, 1, 15, 14, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
-        # Set up automation
-        await setup_automation(hass, automation_config)
-
-        async_fire_time_changed(hass, target_time)
-        await hass.async_block_till_done()
-
-        # Turn off Apple TV
-        await trigger_state_change(hass, "media_player.lounge_room", "off", "playing")
-
-        # Clean up: turn off automation to cancel timers
-        await hass.services.async_call(
-            "automation",
-            "turn_off",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
-
-    # Bedtime should NOT be triggered (other modes may be)
-    # If any calls were made, they should not be for bedtime
-    for call in calls:
-        if "option" in call.data:
-            assert call.data["option"] != "bedtime", (
-                "Bedtime mode should not activate during day"
-            )
+    # Bedtime should NOT be triggered
+    automation_test.assert_option_not_selected("bedtime")
 
 
-async def test_work_mode_on_weekday_morning(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_work_mode_on_weekday_morning(automation_test):
     """Test that work mode is activated on weekday mornings when not on holidays."""
-    # Set up entities
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "off",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Set time to Monday 09:00 (within work hours)
-    # 2025-01-20 is a Monday
-    target_time = datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
-        # Set up automation
-        await setup_automation(hass, automation_config)
-
-        # Fire time changed event and manually trigger the automation
-        async_fire_time_changed(hass, target_time)
-        await hass.async_block_till_done()
-
-        # Manually trigger the automation (simulates time_pattern trigger)
-        await hass.services.async_call(
-            "automation",
-            "trigger",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-
-        # Clean up: turn off automation to cancel timers
-        await hass.services.async_call(
-            "automation",
-            "turn_off",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
+    # Manually trigger the automation (simulates time_pattern trigger)
+    await automation_test.trigger_automation()
 
     # Verify work mode was selected
-    assert len(calls) >= 1
-    # The last call should be work mode
-    last_call = calls[-1]
-    assert last_call.data.get("option") == "work"
+    automation_test.assert_option_selected("work")
 
 
-async def test_no_work_mode_on_holidays(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_no_work_mode_on_holidays(automation_test):
     """Test that work mode is NOT activated when holidays mode is on."""
-    # Set up entities with holidays enabled
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "on",  # Holidays enabled
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
-
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Set up automation
-    await setup_automation(hass, automation_config)
-
-    # Trigger at Monday 09:00 (would normally be work time)
-    # 2025-01-20 is a Monday
-    target_time = datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-    async_fire_time_changed(hass, target_time)
-    await hass.async_block_till_done()
-
-    # Clean up: turn off automation to cancel timers
-    await hass.services.async_call(
-        "automation",
-        "turn_off",
-        {"entity_id": "automation.house_mode_control"},
-        blocking=True,
-    )
-    await hass.async_block_till_done()
 
     # Work mode should NOT be triggered
-    for call in calls:
-        if "option" in call.data:
-            assert call.data["option"] != "work", (
-                "Work mode should not activate during holidays"
-            )
+    automation_test.assert_option_not_selected("work")
 
 
-async def test_wakeup_mode_on_weekday_morning(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_wakeup_mode_on_weekday_morning(automation_test):
     """Test that wake-up mode is activated on weekday mornings (06:00-08:00)."""
-    # Set up entities
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "off",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 20, 7, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 07:00
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Trigger at Monday 07:00 (within wake-up hours)
-    # 2025-01-20 is a Monday
-    target_time = datetime(2025, 1, 20, 7, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
-        # Set up automation
-        await setup_automation(hass, automation_config)
-
-        # Fire time changed event and manually trigger the automation
-        async_fire_time_changed(hass, target_time)
-        await hass.async_block_till_done()
-
-        # Manually trigger the automation (simulates time_pattern trigger)
-        await hass.services.async_call(
-            "automation",
-            "trigger",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-
-        # Clean up: turn off automation to cancel timers
-        await hass.services.async_call(
-            "automation",
-            "turn_off",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
+    # Manually trigger the automation
+    await automation_test.trigger_automation()
 
     # Verify wake-up mode was selected
-    assert len(calls) >= 1
-    last_call = calls[-1]
-    assert last_call.data.get("option") == "wake up"
+    automation_test.assert_option_selected("wake up")
 
 
-async def test_wakeup_mode_on_weekend_morning(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_wakeup_mode_on_weekend_morning(automation_test):
     """Test that wake-up mode is activated on weekend mornings (07:00-09:00)."""
-    # Set up entities
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "off",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 18, 8, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Saturday 08:00
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Trigger at Saturday 08:00 (within weekend wake-up hours)
-    # 2025-01-18 is a Saturday
-    target_time = datetime(2025, 1, 18, 8, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
-        # Set up automation
-        await setup_automation(hass, automation_config)
-
-        # Fire time changed event and manually trigger the automation
-        async_fire_time_changed(hass, target_time)
-        await hass.async_block_till_done()
-
-        # Manually trigger the automation (simulates time_pattern trigger)
-        await hass.services.async_call(
-            "automation",
-            "trigger",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-
-        # Clean up: turn off automation to cancel timers
-        await hass.services.async_call(
-            "automation",
-            "turn_off",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
+    # Manually trigger the automation
+    await automation_test.trigger_automation()
 
     # Verify wake-up mode was selected
-    assert len(calls) >= 1
-    last_call = calls[-1]
-    assert last_call.data.get("option") == "wake up"
+    automation_test.assert_option_selected("wake up")
 
 
-async def test_sleep_mode_in_early_morning(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_sleep_mode_in_early_morning(automation_test):
     """Test that sleep mode is activated in early morning (02:00-07:00)."""
-    # Set up entities
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "off",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 15, 3, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # 03:00 AM
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Trigger at 03:00 AM
-    target_time = datetime(2025, 1, 15, 3, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
-        # Set up automation
-        await setup_automation(hass, automation_config)
-
-        # Fire time changed event and manually trigger the automation
-        async_fire_time_changed(hass, target_time)
-        await hass.async_block_till_done()
-
-        # Manually trigger the automation (simulates time_pattern trigger)
-        await hass.services.async_call(
-            "automation",
-            "trigger",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-
-        # Clean up: turn off automation to cancel timers
-        await hass.services.async_call(
-            "automation",
-            "turn_off",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
+    # Manually trigger the automation
+    await automation_test.trigger_automation()
 
     # Verify sleep mode was selected
-    assert len(calls) >= 1
-    last_call = calls[-1]
-    assert last_call.data.get("option") == "sleep"
+    automation_test.assert_option_selected("sleep")
 
 
-async def test_relaxation_mode_in_evening(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_relaxation_mode_in_evening(automation_test):
     """Test that relaxation mode is activated after 20:00."""
-    # Set up entities
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "off",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 15, 20, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # 20:30
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Trigger at 20:30
-    target_time = datetime(2025, 1, 15, 20, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
-        # Set up automation
-        await setup_automation(hass, automation_config)
-
-        # Fire time changed event and manually trigger the automation
-        async_fire_time_changed(hass, target_time)
-        await hass.async_block_till_done()
-
-        # Manually trigger the automation (simulates time_pattern trigger)
-        await hass.services.async_call(
-            "automation",
-            "trigger",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-
-        # Clean up: turn off automation to cancel timers
-        await hass.services.async_call(
-            "automation",
-            "turn_off",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
+    # Manually trigger the automation
+    await automation_test.trigger_automation()
 
     # Verify relaxation mode was selected
-    assert len(calls) >= 1
-    last_call = calls[-1]
-    assert last_call.data.get("option") == "relaxation"
+    automation_test.assert_option_selected("relaxation")
 
 
-async def test_dinner_mode_in_evening(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_dinner_mode_in_evening(automation_test):
     """Test that dinner mode is activated after 18:00."""
-    # Set up entities
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "default",
             "input_boolean.house_mode_away": "off",
             "input_boolean.holidays": "off",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 15, 18, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # 18:30
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Trigger at 18:30
-    target_time = datetime(2025, 1, 15, 18, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-
-    # Mock the current time
-    with patch("homeassistant.util.dt.now", return_value=target_time):
-        # Set up automation
-        await setup_automation(hass, automation_config)
-
-        # Fire time changed event and manually trigger the automation
-        async_fire_time_changed(hass, target_time)
-        await hass.async_block_till_done()
-
-        # Manually trigger the automation (simulates time_pattern trigger)
-        await hass.services.async_call(
-            "automation",
-            "trigger",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-
-        # Clean up: turn off automation to cancel timers
-        await hass.services.async_call(
-            "automation",
-            "turn_off",
-            {"entity_id": "automation.house_mode_control"},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
+    # Manually trigger the automation
+    await automation_test.trigger_automation()
 
     # Verify dinner mode was selected
-    assert len(calls) >= 1
-    last_call = calls[-1]
-    assert last_call.data.get("option") == "dinner"
+    automation_test.assert_option_selected("dinner")
 
 
-async def test_away_mode_prevents_automatic_mode_changes(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_away_mode_prevents_automatic_mode_changes(automation_test):
     """Test that when house is in away mode, automatic mode changes don't occur."""
-    # Set up entities with house in away mode
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "away",
             "input_boolean.house_mode_away": "on",
             "input_boolean.holidays": "off",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
 
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
+    await automation_test.trigger_automation()
 
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Set up automation
-    await setup_automation(hass, automation_config)
-
-    # Trigger at work time on a weekday (Monday 09:00)
-    # 2025-01-20 is a Monday
-    target_time = datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-    async_fire_time_changed(hass, target_time)
-    await hass.async_block_till_done()
-
-    # Clean up: turn off automation to cancel timers
-    await hass.services.async_call(
-        "automation",
-        "turn_off",
-        {"entity_id": "automation.house_mode_control"},
-        blocking=True,
-    )
-    await hass.async_block_till_done()
-
-    # No mode changes should occur (sequence is empty for away mode condition)
-    assert_service_not_called(calls)
+    # No mode changes should occur
+    automation_test.assert_no_service_calls()
 
 
-async def test_returning_home_from_away_changes_mode(
-    hass: HomeAssistant, load_automation, setup_test_entities
-):
+async def test_returning_home_from_away_changes_mode(automation_test):
     """Test that when returning home from away, mode is updated appropriately."""
-    # Set up entities with house in away mode
-    await setup_test_entities(
-        {
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
             "input_select.house_mode": "away",
             "input_boolean.house_mode_away": "on",
             "input_boolean.holidays": "off",
-        }
+        },
+        mock_service=("input_select", "select_option"),
+        time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
-
-    # Mock the input_select.select_option service
-    calls = async_mock_service(hass, "input_select", "select_option")
-
-    # Load the automation
-    automation_config = load_automation("house", "mode.yaml")
-
-    # Set up automation
-    await setup_automation(hass, automation_config)
-
-    # Set time to work time on a weekday (Monday 09:00)
-    # 2025-01-20 is a Monday
-    target_time = datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE)
-    async_fire_time_changed(hass, target_time)
-    await hass.async_block_till_done()
 
     # Turn off away mode (returning home)
-    await trigger_state_change(hass, "input_boolean.house_mode_away", "off", "on")
+    await automation_test.state_change("input_boolean.house_mode_away", "off", "on")
 
-    # Clean up: turn off automation to cancel timers
-    await hass.services.async_call(
-        "automation",
-        "turn_off",
-        {"entity_id": "automation.house_mode_control"},
-        blocking=True,
+    # Mode should be changed (not away)
+    automation_test.assert_option_not_selected("away")
+
+
+async def test_full_weekday_mode_transitions(automation_test):
+    """Test complete 24-hour cycle through all modes on a weekday."""
+    await automation_test.setup(
+        automation=("house", "mode.yaml"),
+        entities={
+            "input_select.house_mode": "sleep",
+            "input_boolean.house_mode_away": "off",
+            "input_boolean.holidays": "off",
+            "media_player.lounge_room": "off",
+        },
+        register_input_select_service=True,
+        time=datetime(2025, 1, 19, 22, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Sunday 22:30
     )
-    await hass.async_block_till_done()
 
-    # Mode should be changed (likely to work mode given the time)
-    assert len(calls) >= 1
-    # The mode should no longer be "away"
-    last_call = calls[-1]
-    assert last_call.data.get("option") != "away"
+    await automation_test.trigger_automation()
+
+    # 22:30 - Sleep mode (protected, no change)
+    assert automation_test.hass.states.get("input_select.house_mode").state == "sleep"
+
+    # 00:30 - Sleep mode  - should still be on
+    await automation_test.advance_time(datetime(2025, 1, 20, 0, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "sleep"
+
+    # 02:30 - Sleep mode (02:00-07:00)
+    await automation_test.advance_time(datetime(2025, 1, 20, 2, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "sleep"
+
+    # 06:30 - Wake up mode (06:00-08:00 weekdays)
+    await automation_test.advance_time(datetime(2025, 1, 20, 6, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "wake up"
+
+    # 08:30 - Work mode (08:00-17:00 weekdays, not on holidays)
+    await automation_test.advance_time(datetime(2025, 1, 20, 8, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "work"
+
+    # 12:00 - Leave house (should change to away mode)
+    await automation_test.advance_time(datetime(2025, 1, 20, 12, 00, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.state_change("input_boolean.house_mode_away", "on", "off")
+    assert automation_test.hass.states.get("input_select.house_mode").state == "away"
+
+    # 13:00 - Should still be away
+    await automation_test.advance_time(datetime(2025, 1, 20, 13, 00, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "away"
+
+    # 13:30 - Return home (should exit away mode)
+    await automation_test.advance_time(datetime(2025, 1, 20, 13, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.state_change("input_boolean.house_mode_away", "off", "on")
+    assert automation_test.hass.states.get("input_select.house_mode").state == "work"
+
+    # 17:30 - Default mode (after work, before dinner)
+    await automation_test.advance_time(datetime(2025, 1, 20, 17, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "default"
+
+    # 18:30 - Dinner mode (18:00-20:00)
+    await automation_test.advance_time(datetime(2025, 1, 20, 18, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "dinner"
+
+    # 20:30 - Relaxation mode (20:00+)
+    await automation_test.advance_time(datetime(2025, 1, 20, 20, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.trigger_automation()
+    assert automation_test.hass.states.get("input_select.house_mode").state == "relaxation"
+
+    # 22:00 - Apple TV turns off -> Bedtime mode (21:00-00:00)
+    await automation_test.advance_time(datetime(2025, 1, 20, 22, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
+    await automation_test.state_change("media_player.lounge_room", "off", "playing")
+    assert automation_test.hass.states.get("input_select.house_mode").state == "bedtime"
