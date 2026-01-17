@@ -30,6 +30,12 @@ triggers:
       - media_player.lounge_room
     to: "off"
 
+  - id: house_away_turned_on
+    platform: state
+    entity_id:
+      - input_boolean.house_mode_away
+    to: "on"
+
   - id: house_away_turned_off
     platform: state
     entity_id:
@@ -43,6 +49,13 @@ triggers:
 
 variables:
   anchors:
+    - &turn_on_away_mode
+      service: input_select.select_option
+      target:
+        entity_id: input_select.house_mode
+      data:
+        option: "away"
+
     - &turn_on_bedtime_mode
       service: input_select.select_option
       target:
@@ -63,6 +76,41 @@ variables:
         entity_id: input_select.house_mode
       data:
         option: "wake up"
+
+    - &wake_up_time_conditions
+      or:
+        - alias: "Time 0600 -> 0800 Weekdays"
+          condition: time
+          after: "06:00:00"
+          before: "08:00:00"
+          weekday:
+            - mon
+            - tue
+            - wed
+            - thu
+            - fri
+        - alias: "Time 0700 -> 0900 Weekends"
+          condition: time
+          after: "07:00:00"
+          before: "09:00:00"
+          weekday:
+            - sat
+            - sun
+
+    - &protected_modes
+      or:
+        - alias: "House mode Away already on"
+          condition: state
+          entity_id: input_select.house_mode
+          state: "away"
+        - alias: "House mode bedtime on"
+          condition: state
+          entity_id: input_select.house_mode
+          state: "bedtime"
+        - alias: "House mode sleep on"
+          condition: state
+          entity_id: input_select.house_mode
+          state: "sleep"
 
     - &turn_on_relaxation_mode
       service: input_select.select_option
@@ -94,23 +142,35 @@ variables:
 
 action:
   - choose:
+      # ============================================
+      # PRIORITY 1: EVENT-DRIVEN MODE CHANGES
+      # These take precedence over time-based scheduling
+      # ============================================
+
+      - alias: "Away mode turned ON"
+        conditions:
+          - condition: trigger
+            id: house_away_turned_on
+        sequence:
+          <<: *turn_on_away_mode
+
+      # ============================================
+      # PRIORITY 2: PROTECTED MODES
+      # Prevent time-based triggers from overriding certain modes
+      # ============================================
+
       # This just means if the house is already in away do not change it.
       # Or because bedtime is only triggered via apple TV turning off, we don't want to switch it automatically
-      - alias: "Do nothing (away or bedtime) unless returning home"
+      - alias: "Do nothing (protected_modes) unless returning home or waking up"
         conditions:
           and:
             - alias: "Not caused by returning home"
               condition: template
               value_template: "{{ trigger.id != 'house_away_turned_off' }}"
-            - or:
-                - alias: "House mode Away already on"
-                  condition: state
-                  entity_id: input_select.house_mode
-                  state: "away"
-                - alias: "House mode bedtime on"
-                  condition: state
-                  entity_id: input_select.house_mode
-                  state: "bedtime"
+            - alias: "Not wake up time"
+              not:
+                - <<: *wake_up_time_conditions
+            - <<: *protected_modes
         sequence: []
 
       # Bedtime mode turned on when apple TV turned off at night
@@ -126,11 +186,35 @@ action:
         sequence:
           <<: *turn_on_bedtime_mode
 
+      # Transition from bedtime to sleep mode after 02:00
+      - alias: "Bedtime to Sleep transition"
+        conditions:
+          - alias: "Currently in bedtime mode"
+            condition: state
+            entity_id: input_select.house_mode
+            state: "bedtime"
+          - alias: "Time after 0200"
+            condition: time
+            after: "02:00:00"
+            before: "07:00:00"
+        sequence:
+          <<: *turn_on_sleep_mode
+
+      # ============================================
+      # PRIORITY 3: TIME-BASED MODE SCHEDULING
+      # These run on time patterns and respect protected modes
+      # ============================================
+
       - alias: "Relaxation mode handling"
         conditions:
-          - alias: "Time after 2000"
-            condition: time
-            after: "20:00:00"
+          - or:
+              - alias: "Time after 2000"
+                condition: time
+                after: "20:00:00"
+              - alias: "Time between 0000 -> 0200"
+                condition: time
+                after: "00:00:00"
+                before: "02:00:00"
         sequence:
           <<: *turn_on_relaxation_mode
 
@@ -175,24 +259,7 @@ action:
 
       - alias: "Wake-up mode handling"
         conditions:
-          or:
-            - alias: "Time 0600 -> 0800 Weekdays"
-              condition: time
-              after: "06:00:00"
-              before: "08:00:00"
-              weekday:
-                - mon
-                - tue
-                - wed
-                - thu
-                - fri
-            - alias: "Time 0700 -> 0900 Weekends"
-              condition: time
-              after: "07:00:00"
-              before: "09:00:00"
-              weekday:
-                - sat
-                - sun
+          <<: *wake_up_time_conditions
         sequence:
           <<: *turn_on_wakeup_mode
 

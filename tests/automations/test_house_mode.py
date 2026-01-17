@@ -261,10 +261,9 @@ async def test_full_weekday_mode_transitions(automation_test):
     await automation_test.trigger_automation()
     assert automation_test.hass.states.get("input_select.house_mode").state == "work"
 
-    # 12:00 - Leave house (change to away mode)
+    # 12:00 - Leave house (should change to away mode)
     await automation_test.advance_time(datetime(2025, 1, 20, 12, 00, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
     await automation_test.state_change("input_boolean.house_mode_away", "on", "off")
-    automation_test.hass.states.async_set("input_select.house_mode", "away")
     assert automation_test.hass.states.get("input_select.house_mode").state == "away"
 
     # 13:00 - Should still be away
