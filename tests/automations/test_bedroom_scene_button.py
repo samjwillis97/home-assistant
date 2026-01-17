@@ -35,7 +35,10 @@ async def test_button_on_activates_scene_based_on_house_mode(automation_test):
 
 
 async def test_button_off_changes_mode_to_sleep(automation_test):
-    """Test that pressing button off changes house mode to sleep."""
+    """Test that pressing button off changes house mode to sleep.
+
+    The scene activation is handled by apply_mode_scenes.yaml automation.
+    """
     await automation_test.setup(
         automation=("bedroom", "scene_button.yaml"),
         entities={
@@ -55,27 +58,3 @@ async def test_button_off_changes_mode_to_sleep(automation_test):
 
     # Verify house mode was changed to sleep
     automation_test.assert_option_selected("sleep")
-
-
-async def test_house_mode_change_activates_scene(automation_test):
-    """Test that when house mode changes, the appropriate scene is activated."""
-    await automation_test.setup(
-        automation=("bedroom", "scene_button.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-        },
-        mock_service=("scene", "turn_on"),
-    )
-
-    # Change house mode to bedtime
-    await automation_test.state_change("input_select.house_mode", "bedtime", "default")
-
-    # Verify the bedtime scene was activated
-    assert len(automation_test.service_calls) >= 1
-    last_call = automation_test.service_calls[-1]
-    entity_id = last_call.data.get("entity_id")
-    # entity_id could be a string or list depending on how it's passed
-    if isinstance(entity_id, list):
-        assert entity_id[0] == "scene.bedroom_bed_time"
-    else:
-        assert entity_id == "scene.bedroom_bed_time"

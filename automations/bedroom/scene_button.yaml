@@ -20,11 +20,6 @@ triggers:
       device_id: 91cf3416653ada66678a711fa944bab6
       command: "off"
 
-  - id: "house_mode_changed"
-    platform: state
-    entity_id: input_select.house_mode
-    to: ~
-
 variables:
   # Map house modes to corresponding bedroom scenes
   scene_map:
@@ -63,13 +58,3 @@ action:
               entity_id: input_select.house_mode
             data:
               option: "sleep"
-
-      - alias: "House mode changed - update bedroom scene"
-        conditions:
-          - condition: trigger
-            id: house_mode_changed
-        sequence:
-          - alias: "Activate scene based on new house mode"
-            service: scene.turn_on
-            target:
-              entity_id: "{{ target_scene }}"
