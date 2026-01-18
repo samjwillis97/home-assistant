@@ -1,0 +1,89 @@
+---
+# Wake-up time schedules
+wake_up_weekday_start:
+  name: "Wake Up Time Start (Weekday)"
+  icon: mdi:alarm
+  has_time: true
+  initial: "06:00"
+
+wake_up_weekday_end:
+  name: "Wake Up Time End (Weekday)"
+  icon: mdi:alarm
+  has_time: true
+  initial: "08:00"
+
+wake_up_weekend_start:
+  name: "Wake Up Time Start (Weekend)"
+  icon: mdi:alarm
+  has_time: true
+  initial: "07:00"
+
+wake_up_weekend_end:
+  name: "Wake Up Time End (Weekend)"
+  icon: mdi:alarm
+  has_time: true
+  initial: "09:00"
+
+# Work time schedules
+work_start:
+  name: "Work Mode Start Time"
+  icon: mdi:briefcase
+  has_time: true
+  initial: "08:00"
+
+work_end:
+  name: "Work Mode End Time"
+  icon: mdi:briefcase
+  has_time: true
+  initial: "17:00"
+
+# Weekend default mode schedule
+default_weekend_start:
+  name: "Default Mode Start (Weekend)"
+  icon: mdi:home
+  has_time: true
+  initial: "09:00"
+
+default_weekend_end:
+  name: "Default Mode End (Weekend)"
+  icon: mdi:home
+  has_time: true
+  initial: "18:00"
+
+# Evening schedules
+dinner_time:
+  name: "Dinner Mode Start Time"
+  icon: mdi:silverware-fork-knife
+  has_time: true
+  initial: "18:00"
+
+relaxation_time:
+  name: "Relaxation Mode Start Time"
+  icon: mdi:sofa
+  has_time: true
+  initial: "20:00"
+
+# Night schedules
+bedtime_window_start:
+  name: "Bedtime Window Start"
+  icon: mdi:sleep
+  has_time: true
+  initial: "21:00"
+
+bedtime_window_end:
+  name: "Bedtime Window End"
+  icon: mdi:sleep
+  has_time: true
+  initial: "00:00"
+
+sleep_time_start:
+  name: "Sleep Mode Start Time"
+  icon: mdi:weather-night
+  has_time: true
+  initial: "02:00"
+
+sleep_time_end:
+  name: "Sleep Mode End Time"
+  icon: mdi:weather-night
+  has_time: true
+  initial: "07:00"
