@@ -97,21 +97,6 @@ variables:
             - sat
             - sun
 
-    - &protected_modes
-      or:
-        - alias: "House mode Away already on"
-          condition: state
-          entity_id: input_select.house_mode
-          state: "away"
-        - alias: "House mode bedtime on"
-          condition: state
-          entity_id: input_select.house_mode
-          state: "bedtime"
-        - alias: "House mode sleep on"
-          condition: state
-          entity_id: input_select.house_mode
-          state: "sleep"
-
     - &turn_on_relaxation_mode
       service: input_select.select_option
       target:
