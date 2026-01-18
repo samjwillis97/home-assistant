@@ -1,13 +1,14 @@
 """Tests for House Apply Mode Scenes automation."""
 
 
-async def test_work_mode_activates_always_scenes(automation_test):
-    """Test that work mode activates the dining room work scene."""
+async def test_work_mode_activates_dining_room_scene_when_maddy_home(automation_test):
+    """Test that work mode activates the dining room work scene when Maddy is home."""
     await automation_test.setup(
         automation=("house", "apply_mode_scenes.yaml"),
         entities={
             "input_select.house_mode": "default",
             "input_boolean.sam_home": "off",
+            "input_boolean.maddy_home": "on",  # Maddy is home
         },
         mock_service=("scene", "turn_on"),
     )
@@ -18,17 +19,21 @@ async def test_work_mode_activates_always_scenes(automation_test):
     # Verify dining room work scene was activated
     assert len(automation_test.service_calls) >= 1
     call = automation_test.service_calls[0]
-    entity_ids = call.data.get("entity_id")
-    assert "scene.dining_room_work" in entity_ids
+    entity_id = call.data.get("entity_id")
+    if isinstance(entity_id, list):
+        assert entity_id[0] == "scene.dining_room_work"
+    else:
+        assert entity_id == "scene.dining_room_work"
 
 
-async def test_work_mode_activates_conditional_scene_when_sam_home(automation_test):
-    """Test that work mode activates study scene when sam is home."""
+async def test_work_mode_activates_both_scenes_when_both_home(automation_test):
+    """Test that work mode activates both scenes when both Maddy and Sam are home."""
     await automation_test.setup(
         automation=("house", "apply_mode_scenes.yaml"),
         entities={
             "input_select.house_mode": "default",
             "input_boolean.sam_home": "on",  # Sam is home
+            "input_boolean.maddy_home": "on",  # Maddy is home
         },
         mock_service=("scene", "turn_on"),
     )
@@ -39,26 +44,27 @@ async def test_work_mode_activates_conditional_scene_when_sam_home(automation_te
     # Verify both dining room and study work scenes were activated
     assert len(automation_test.service_calls) >= 2
 
-    # First call should be always scenes
-    always_call = automation_test.service_calls[0]
-    assert "scene.dining_room_work" in always_call.data.get("entity_id")
+    # Check that both scenes were activated (order may vary)
+    all_entity_ids = []
+    for call in automation_test.service_calls:
+        entity_id = call.data.get("entity_id")
+        if isinstance(entity_id, list):
+            all_entity_ids.extend(entity_id)
+        else:
+            all_entity_ids.append(entity_id)
 
-    # Second call should be conditional scene
-    conditional_call = automation_test.service_calls[1]
-    entity_id = conditional_call.data.get("entity_id")
-    if isinstance(entity_id, list):
-        assert entity_id[0] == "scene.study_work"
-    else:
-        assert entity_id == "scene.study_work"
+    assert "scene.dining_room_work" in all_entity_ids
+    assert "scene.study_work" in all_entity_ids
 
 
-async def test_work_mode_skips_conditional_scene_when_sam_not_home(automation_test):
+async def test_work_mode_skips_study_scene_when_sam_not_home(automation_test):
     """Test that work mode does NOT activate study scene when sam is not home."""
     await automation_test.setup(
         automation=("house", "apply_mode_scenes.yaml"),
         entities={
             "input_select.house_mode": "default",
             "input_boolean.sam_home": "off",  # Sam is NOT home
+            "input_boolean.maddy_home": "on",  # Maddy IS home
         },
         mock_service=("scene", "turn_on"),
     )
@@ -69,9 +75,59 @@ async def test_work_mode_skips_conditional_scene_when_sam_not_home(automation_te
     # Verify only dining room scene was activated (not study)
     automation_test.assert_service_call_count(1)
     call = automation_test.service_calls[0]
-    entity_ids = call.data.get("entity_id")
-    assert "scene.dining_room_work" in entity_ids
+    entity_id = call.data.get("entity_id")
+    if isinstance(entity_id, list):
+        assert "scene.dining_room_work" in entity_id
+        assert "scene.study_work" not in entity_id
+    else:
+        assert entity_id == "scene.dining_room_work"
     assert "scene.study_work" not in str(automation_test.service_calls)
+
+
+async def test_work_mode_activates_study_scene_when_only_sam_home(automation_test):
+    """Test that work mode activates study scene when only Sam is home."""
+    await automation_test.setup(
+        automation=("house", "apply_mode_scenes.yaml"),
+        entities={
+            "input_select.house_mode": "default",
+            "input_boolean.sam_home": "on",  # Sam IS home
+            "input_boolean.maddy_home": "off",  # Maddy is NOT home
+        },
+        mock_service=("scene", "turn_on"),
+    )
+
+    # Change house mode to work
+    await automation_test.state_change("input_select.house_mode", "work", "default")
+
+    # Verify only study scene was activated (not dining room)
+    automation_test.assert_service_call_count(1)
+    call = automation_test.service_calls[0]
+    entity_id = call.data.get("entity_id")
+    if isinstance(entity_id, list):
+        assert "scene.study_work" in entity_id
+        assert "scene.dining_room_work" not in entity_id
+    else:
+        assert entity_id == "scene.study_work"
+    assert "scene.dining_room_work" not in str(automation_test.service_calls)
+
+
+async def test_work_mode_skips_all_scenes_when_no_one_home(automation_test):
+    """Test that work mode does NOT activate any scenes when no one is home."""
+    await automation_test.setup(
+        automation=("house", "apply_mode_scenes.yaml"),
+        entities={
+            "input_select.house_mode": "default",
+            "input_boolean.sam_home": "off",  # Sam is NOT home
+            "input_boolean.maddy_home": "off",  # Maddy is NOT home
+        },
+        mock_service=("scene", "turn_on"),
+    )
+
+    # Change house mode to work
+    await automation_test.state_change("input_select.house_mode", "work", "default")
+
+    # Verify no scenes were activated
+    automation_test.assert_no_service_calls()
 
 
 async def test_sleep_mode_activates_all_sleep_scenes(automation_test):
