@@ -19,8 +19,8 @@ triggers:
 conditions:
   - alias: "Within bedtime window"
     condition: time
-    after: input_datetime.bedtime_window_start
-    before: input_datetime.bedtime_window_end
+    after: "{{ states('input_datetime.bedtime_window_start') }}"
+    before: "{{ states('input_datetime.bedtime_window_end') }}"
 
 action:
   - alias: "Signal end of day"

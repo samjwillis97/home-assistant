@@ -84,8 +84,8 @@ variables:
       or:
         - alias: "Wake-up time Weekdays"
           condition: time
-          after: input_datetime.wake_up_weekday_start
-          before: input_datetime.wake_up_weekday_end
+          after: "{{ states('input_datetime.wake_up_weekday_start') }}"
+          before: "{{ states('input_datetime.wake_up_weekday_end') }}"
           weekday:
             - mon
             - tue
@@ -94,8 +94,8 @@ variables:
             - fri
         - alias: "Wake-up time Weekends"
           condition: time
-          after: input_datetime.wake_up_weekend_start
-          before: input_datetime.wake_up_weekend_end
+          after: "{{ states('input_datetime.wake_up_weekend_start') }}"
+          before: "{{ states('input_datetime.wake_up_weekend_end') }}"
           weekday:
             - sat
             - sun
@@ -188,8 +188,8 @@ action:
         conditions:
           - alias: "Within bedtime window"
             condition: time
-            after: input_datetime.bedtime_window_start
-            before: input_datetime.bedtime_window_end
+            after: "{{ states('input_datetime.bedtime_window_start') }}"
+            before: "{{ states('input_datetime.bedtime_window_end') }}"
           - alias: "End of day signal received"
             condition: trigger
             id: end_of_day_signal
@@ -205,8 +205,8 @@ action:
             state: "bedtime"
           - alias: "Sleep time reached"
             condition: time
-            after: input_datetime.sleep_time_start
-            before: input_datetime.sleep_time_end
+            after: "{{ states('input_datetime.sleep_time_start') }}"
+            before: "{{ states('input_datetime.sleep_time_end') }}"
         sequence:
           <<: *turn_on_sleep_mode
 
@@ -220,11 +220,11 @@ action:
           - or:
               - alias: "Relaxation time"
                 condition: time
-                after: input_datetime.relaxation_time
+                after: "{{ states('input_datetime.relaxation_time') }}"
               - alias: "Time between midnight and sleep start"
                 condition: time
                 after: "00:00:00"
-                before: input_datetime.sleep_time_start
+                before: "{{ states('input_datetime.sleep_time_start') }}"
         sequence:
           <<: *turn_on_relaxation_mode
 
@@ -232,7 +232,7 @@ action:
         conditions:
           - alias: "Dinner time"
             condition: time
-            after: input_datetime.dinner_time
+            after: "{{ states('input_datetime.dinner_time') }}"
         sequence:
           <<: *turn_on_dinner_mode
 
@@ -240,8 +240,8 @@ action:
         conditions:
           - alias: "Default hours Weekends"
             condition: time
-            after: input_datetime.default_weekend_start
-            before: input_datetime.default_weekend_end
+            after: "{{ states('input_datetime.default_weekend_start') }}"
+            before: "{{ states('input_datetime.default_weekend_end') }}"
             weekday:
               - sat
               - sun
@@ -256,8 +256,8 @@ action:
             state: "off"
           - alias: "Work hours Weekdays"
             condition: time
-            after: input_datetime.work_start
-            before: input_datetime.work_end
+            after: "{{ states('input_datetime.work_start') }}"
+            before: "{{ states('input_datetime.work_end') }}"
             weekday:
               - mon
               - tue
@@ -278,8 +278,8 @@ action:
         conditions:
           - alias: "Sleep time window"
             condition: time
-            after: input_datetime.sleep_time_start
-            before: input_datetime.sleep_time_end
+            after: "{{ states('input_datetime.sleep_time_start') }}"
+            before: "{{ states('input_datetime.sleep_time_end') }}"
         sequence:
           <<: *turn_on_sleep_mode
 
