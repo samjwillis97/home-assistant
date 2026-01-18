@@ -4,43 +4,58 @@ from datetime import datetime
 from homeassistant.util import dt as dt_util
 
 
-async def test_bedtime_mode_when_apple_tv_off_at_night(automation_test):
-    """Test that bedtime mode is activated when Apple TV turns off between 21:00-00:00."""
+def get_default_entities():
+    """Return default entities for house mode tests including input_datetime helpers."""
+    return {
+        "input_select.house_mode": "default",
+        "input_boolean.house_mode_away": "off",
+        "input_boolean.holidays": "off",
+        "input_boolean.end_of_day_signal": "off",
+        # Input datetime helpers with default schedule values
+        "input_datetime.wake_up_weekday_start": "06:00:00",
+        "input_datetime.wake_up_weekday_end": "08:00:00",
+        "input_datetime.wake_up_weekend_start": "07:00:00",
+        "input_datetime.wake_up_weekend_end": "09:00:00",
+        "input_datetime.work_start": "08:00:00",
+        "input_datetime.work_end": "17:00:00",
+        "input_datetime.default_weekend_start": "09:00:00",
+        "input_datetime.default_weekend_end": "18:00:00",
+        "input_datetime.dinner_time": "18:00:00",
+        "input_datetime.relaxation_time": "20:00:00",
+        "input_datetime.bedtime_window_start": "21:00:00",
+        "input_datetime.bedtime_window_end": "00:00:00",
+        "input_datetime.sleep_time_start": "02:00:00",
+        "input_datetime.sleep_time_end": "07:00:00",
+    }
+
+
+async def test_bedtime_mode_when_end_of_day_signal_at_night(automation_test):
+    """Test that bedtime mode is activated when end-of-day signal triggers between 21:00-00:00."""
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-            "media_player.lounge_room": "playing",
-        },
+        entities=get_default_entities(),
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 15, 21, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),
     )
 
-    # Turn off Apple TV
-    await automation_test.state_change("media_player.lounge_room", "off", "playing")
+    # Trigger end-of-day signal
+    await automation_test.state_change("input_boolean.end_of_day_signal", "on", "off")
 
     # Verify bedtime mode was selected
     automation_test.assert_option_selected("bedtime")
 
 
-async def test_no_bedtime_mode_when_apple_tv_off_during_day(automation_test):
-    """Test that bedtime mode is NOT activated when Apple TV turns off during the day."""
+async def test_no_bedtime_mode_when_end_of_day_signal_during_day(automation_test):
+    """Test that bedtime mode is NOT activated when end-of-day signal triggers during the day."""
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-            "media_player.lounge_room": "playing",
-        },
+        entities=get_default_entities(),
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 15, 14, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),
     )
 
-    # Turn off Apple TV
-    await automation_test.state_change("media_player.lounge_room", "off", "playing")
+    # Trigger end-of-day signal during the day
+    await automation_test.state_change("input_boolean.end_of_day_signal", "on", "off")
 
     # Bedtime should NOT be triggered
     automation_test.assert_option_not_selected("bedtime")
@@ -50,11 +65,7 @@ async def test_work_mode_on_weekday_morning(automation_test):
     """Test that work mode is activated on weekday mornings when not on holidays."""
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-        },
+        entities=get_default_entities(),
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
@@ -68,13 +79,12 @@ async def test_work_mode_on_weekday_morning(automation_test):
 
 async def test_no_work_mode_on_holidays(automation_test):
     """Test that work mode is NOT activated when holidays mode is on."""
+    entities = get_default_entities()
+    entities["input_boolean.holidays"] = "on"  # Holidays enabled
+
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "on",  # Holidays enabled
-        },
+        entities=entities,
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
@@ -87,11 +97,7 @@ async def test_wakeup_mode_on_weekday_morning(automation_test):
     """Test that wake-up mode is activated on weekday mornings (06:00-08:00)."""
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-        },
+        entities=get_default_entities(),
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 20, 7, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 07:00
     )
@@ -107,11 +113,7 @@ async def test_wakeup_mode_on_weekend_morning(automation_test):
     """Test that wake-up mode is activated on weekend mornings (07:00-09:00)."""
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-        },
+        entities=get_default_entities(),
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 18, 8, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Saturday 08:00
     )
@@ -127,11 +129,7 @@ async def test_sleep_mode_in_early_morning(automation_test):
     """Test that sleep mode is activated in early morning (02:00-07:00)."""
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-        },
+        entities=get_default_entities(),
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 15, 3, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # 03:00 AM
     )
@@ -147,11 +145,7 @@ async def test_relaxation_mode_in_evening(automation_test):
     """Test that relaxation mode is activated after 20:00."""
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-        },
+        entities=get_default_entities(),
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 15, 20, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # 20:30
     )
@@ -167,11 +161,7 @@ async def test_dinner_mode_in_evening(automation_test):
     """Test that dinner mode is activated after 18:00."""
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "default",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-        },
+        entities=get_default_entities(),
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 15, 18, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # 18:30
     )
@@ -185,13 +175,13 @@ async def test_dinner_mode_in_evening(automation_test):
 
 async def test_away_mode_prevents_automatic_mode_changes(automation_test):
     """Test that when house is in away mode, automatic mode changes don't occur."""
+    entities = get_default_entities()
+    entities["input_select.house_mode"] = "away"
+    entities["input_boolean.house_mode_away"] = "on"
+
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "away",
-            "input_boolean.house_mode_away": "on",
-            "input_boolean.holidays": "off",
-        },
+        entities=entities,
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
@@ -209,13 +199,13 @@ async def test_away_mode_not_overridden_during_wakeup_time_weekday(automation_te
     override away mode. Away mode should ONLY be cleared when house_mode_away
     is explicitly turned off, never by time patterns.
     """
+    entities = get_default_entities()
+    entities["input_select.house_mode"] = "away"
+    entities["input_boolean.house_mode_away"] = "on"
+
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "away",
-            "input_boolean.house_mode_away": "on",
-            "input_boolean.holidays": "off",
-        },
+        entities=entities,
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 20, 7, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 07:00 (wake-up time)
     )
@@ -233,13 +223,13 @@ async def test_away_mode_not_overridden_during_wakeup_time_weekend(automation_te
     override away mode on weekends. Away mode should ONLY be cleared when
     house_mode_away is explicitly turned off, never by time patterns.
     """
+    entities = get_default_entities()
+    entities["input_select.house_mode"] = "away"
+    entities["input_boolean.house_mode_away"] = "on"
+
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "away",
-            "input_boolean.house_mode_away": "on",
-            "input_boolean.holidays": "off",
-        },
+        entities=entities,
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 18, 7, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Saturday 07:30 (wake-up time)
     )
@@ -256,13 +246,12 @@ async def test_wakeup_time_overrides_sleep_mode(automation_test):
     This ensures that the fix for away mode protection doesn't break
     the intended behavior where wake-up time should transition from sleep.
     """
+    entities = get_default_entities()
+    entities["input_select.house_mode"] = "sleep"
+
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "sleep",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-        },
+        entities=entities,
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 20, 7, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 07:00 (wake-up time)
     )
@@ -279,13 +268,12 @@ async def test_wakeup_time_overrides_bedtime_mode(automation_test):
     This ensures that the fix for away mode protection doesn't break
     the intended behavior where wake-up time should transition from bedtime.
     """
+    entities = get_default_entities()
+    entities["input_select.house_mode"] = "bedtime"
+
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "bedtime",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-        },
+        entities=entities,
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 18, 8, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Saturday 08:00 (wake-up time)
     )
@@ -298,13 +286,13 @@ async def test_wakeup_time_overrides_bedtime_mode(automation_test):
 
 async def test_returning_home_from_away_changes_mode(automation_test):
     """Test that when returning home from away, mode is updated appropriately."""
+    entities = get_default_entities()
+    entities["input_select.house_mode"] = "away"
+    entities["input_boolean.house_mode_away"] = "on"
+
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "away",
-            "input_boolean.house_mode_away": "on",
-            "input_boolean.holidays": "off",
-        },
+        entities=entities,
         mock_service=("input_select", "select_option"),
         time=datetime(2025, 1, 20, 9, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Monday 09:00
     )
@@ -318,14 +306,13 @@ async def test_returning_home_from_away_changes_mode(automation_test):
 
 async def test_full_weekday_mode_transitions(automation_test):
     """Test complete 24-hour cycle through all modes on a weekday."""
+    entities = get_default_entities()
+    entities["input_select.house_mode"] = "sleep"
+    entities["media_player.lounge_room"] = "off"
+
     await automation_test.setup(
         automation=("house", "mode.yaml"),
-        entities={
-            "input_select.house_mode": "sleep",
-            "input_boolean.house_mode_away": "off",
-            "input_boolean.holidays": "off",
-            "media_player.lounge_room": "off",
-        },
+        entities=entities,
         register_input_select_service=True,
         time=datetime(2025, 1, 19, 22, 30, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE),  # Sunday 22:30
     )
@@ -385,7 +372,7 @@ async def test_full_weekday_mode_transitions(automation_test):
     await automation_test.trigger_automation()
     assert automation_test.hass.states.get("input_select.house_mode").state == "relaxation"
 
-    # 22:00 - Apple TV turns off -> Bedtime mode (21:00-00:00)
+    # 22:00 - End-of-day signal triggers -> Bedtime mode (21:00-00:00)
     await automation_test.advance_time(datetime(2025, 1, 20, 22, 0, 0, tzinfo=dt_util.DEFAULT_TIME_ZONE))
-    await automation_test.state_change("media_player.lounge_room", "off", "playing")
+    await automation_test.state_change("input_boolean.end_of_day_signal", "on", "off")
     assert automation_test.hass.states.get("input_select.house_mode").state == "bedtime"
