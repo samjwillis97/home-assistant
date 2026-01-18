@@ -97,21 +97,6 @@ variables:
             - sat
             - sun
 
-    - &protected_modes
-      or:
-        - alias: "House mode Away already on"
-          condition: state
-          entity_id: input_select.house_mode
-          state: "away"
-        - alias: "House mode bedtime on"
-          condition: state
-          entity_id: input_select.house_mode
-          state: "bedtime"
-        - alias: "House mode sleep on"
-          condition: state
-          entity_id: input_select.house_mode
-          state: "sleep"
-
     - &turn_on_relaxation_mode
       service: input_select.select_option
       target:
@@ -159,9 +144,23 @@ action:
       # Prevent time-based triggers from overriding certain modes
       # ============================================
 
-      # This just means if the house is already in away do not change it.
-      # Or because bedtime is only triggered via apple TV turning off, we don't want to switch it automatically
-      - alias: "Do nothing (protected_modes) unless returning home or waking up"
+      # Away mode is ALWAYS protected unless explicitly turned off via house_away_turned_off
+      # This prevents ANY time-based triggers (including wake-up time) from overriding away mode
+      - alias: "Do nothing when in away mode unless explicitly returning home"
+        conditions:
+          and:
+            - alias: "Not caused by returning home"
+              condition: template
+              value_template: "{{ trigger.id != 'house_away_turned_off' }}"
+            - alias: "House mode is away"
+              condition: state
+              entity_id: input_select.house_mode
+              state: "away"
+        sequence: []
+
+      # Bedtime and sleep modes are protected unless it's wake-up time or returning home
+      # This allows wake-up time to transition from bedtime/sleep but NOT from away
+      - alias: "Do nothing (bedtime/sleep modes) unless returning home or waking up"
         conditions:
           and:
             - alias: "Not caused by returning home"
@@ -170,7 +169,15 @@ action:
             - alias: "Not wake up time"
               not:
                 - <<: *wake_up_time_conditions
-            - <<: *protected_modes
+            - or:
+                - alias: "House mode bedtime on"
+                  condition: state
+                  entity_id: input_select.house_mode
+                  state: "bedtime"
+                - alias: "House mode sleep on"
+                  condition: state
+                  entity_id: input_select.house_mode
+                  state: "sleep"
         sequence: []
 
       # Bedtime mode turned on when apple TV turned off at night
