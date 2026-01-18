@@ -5,5 +5,3 @@ icon: mdi:shield-lock
 entities:
   light.living_room_lights:
     state: "off"
-  input_boolean.living_room_camera_state:
-    state: "on"

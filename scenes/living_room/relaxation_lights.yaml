@@ -11,5 +11,3 @@ entities:
     color_temp_kelvin: 2645
   light.donut_lamp:
     state: "on"
-  input_boolean.living_room_camera_state:
-    state: "off"

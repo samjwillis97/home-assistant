@@ -9,5 +9,3 @@ entities:
     state: "off"
   light.donut_lamp:
     state: "off"
-  input_boolean.living_room_camera_state:
-    state: "off"

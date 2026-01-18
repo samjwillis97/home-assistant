@@ -1,0 +1,35 @@
+---
+alias: "Living Room Camera: Away Mode Control"
+description: "Turn camera on when entering away mode, off when leaving"
+id: "living_room_camera_away_mode_control"
+mode: restart
+
+trigger:
+  - platform: state
+    entity_id: input_boolean.house_mode_away
+    id: away_on
+    to: "on"
+  - platform: state
+    entity_id: input_boolean.house_mode_away
+    id: away_off
+    to: "off"
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: away_on
+        sequence:
+          - alias: "Turn on camera when entering away mode"
+            service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.living_room_camera_state
+
+      - conditions:
+          - condition: trigger
+            id: away_off
+        sequence:
+          - alias: "Turn off camera when leaving away mode"
+            service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.living_room_camera_state
