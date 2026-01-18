@@ -28,7 +28,7 @@ async def test_camera_turns_on_when_away_mode_activated(automation_test):
         automation_test.service_calls,
         expected_domain="input_boolean",
         expected_service="turn_on",
-        expected_data={"entity_id": "input_boolean.living_room_camera_state"},
+        expected_data={"entity_id": ["input_boolean.living_room_camera_state"]},
     )
 
 
@@ -56,7 +56,7 @@ async def test_camera_turns_off_when_away_mode_deactivated(automation_test):
         automation_test.service_calls,
         expected_domain="input_boolean",
         expected_service="turn_off",
-        expected_data={"entity_id": "input_boolean.living_room_camera_state"},
+        expected_data={"entity_id": ["input_boolean.living_room_camera_state"]},
     )
 
 
