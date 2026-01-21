@@ -130,9 +130,25 @@ def common_entities():
         "input_select.house_mode": "default",
         "input_boolean.house_mode_away": "off",
         "input_boolean.holidays": "off",
+        "input_boolean.end_of_day_signal": "off",
         "media_player.lounge_room": "off",
         "binary_sensor.hallway_motion": "off",
         "switch.bedroom_lights_switch": "off",
+        # House mode schedule input_datetime helpers (default values)
+        "input_datetime.wake_up_weekday_start": "06:00:00",
+        "input_datetime.wake_up_weekday_end": "08:00:00",
+        "input_datetime.wake_up_weekend_start": "07:00:00",
+        "input_datetime.wake_up_weekend_end": "09:00:00",
+        "input_datetime.work_start": "08:00:00",
+        "input_datetime.work_end": "17:00:00",
+        "input_datetime.default_weekend_start": "09:00:00",
+        "input_datetime.default_weekend_end": "18:00:00",
+        "input_datetime.dinner_time": "18:00:00",
+        "input_datetime.relaxation_time": "20:00:00",
+        "input_datetime.bedtime_window_start": "21:00:00",
+        "input_datetime.bedtime_window_end": "00:00:00",
+        "input_datetime.sleep_time_start": "02:00:00",
+        "input_datetime.sleep_time_end": "07:00:00",
     }
 
 

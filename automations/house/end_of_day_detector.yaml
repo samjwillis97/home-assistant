@@ -1,0 +1,41 @@
+---
+id: "end_of_day_detector"
+alias: "House: End of Day Detector"
+description: >-
+  What: Detects end-of-day signals and sets the end_of_day_signal boolean.
+  When: Triggered by Apple TV turning off during bedtime window (21:00-00:00).
+  Why: Decouples bedtime trigger logic from specific devices. Allows future expansion (phone charging, motion sensors, etc.) without modifying mode automation.
+mode: queued
+trace:
+  stored_traces: 25
+
+triggers:
+  - id: apple_tv_off
+    platform: state
+    entity_id:
+      - media_player.lounge_room
+    to: "off"
+
+conditions:
+  - alias: "Within bedtime window"
+    condition: template
+    value_template: >-
+      {% set current_time = now().strftime('%H:%M:%S') %}
+      {% set start_time = states('input_datetime.bedtime_window_start') %}
+      {% set end_time = states('input_datetime.bedtime_window_end') %}
+      {{ start_time <= current_time or current_time < end_time }}
+
+action:
+  - alias: "Signal end of day"
+    service: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.end_of_day_signal
+
+  - alias: "Reset signal after 5 minutes"
+    delay:
+      minutes: 5
+
+  - alias: "Turn off signal"
+    service: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.end_of_day_signal

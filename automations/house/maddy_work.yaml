@@ -2,7 +2,9 @@
 id: "maddy-leaving-work-mode"
 alias: "House: Maddy Presence During Work"
 description: >-
-  Turn off/on desk lamp when Maddy leaves/arrives during work mode
+  What: Controls desk lamp based on Maddy's presence.
+  When: Triggered when input_boolean.maddy_home changes during work mode.
+  Why: Saves energy by turning off desk lamp when Maddy leaves, and automatically restores dining room work scene when returning.
 mode: queued
 trace:
   stored_traces: 25

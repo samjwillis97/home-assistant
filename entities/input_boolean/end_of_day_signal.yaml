@@ -1,0 +1,5 @@
+---
+end_of_day_signal:
+  name: End of Day Signal
+  icon: mdi:sleep
+  initial: false

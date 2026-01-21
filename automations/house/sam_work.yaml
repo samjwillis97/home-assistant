@@ -2,7 +2,9 @@
 id: "sam-leaving-work-mode"
 alias: "House: Sam Presence During Work"
 description: >-
-  Turn off/on study lights when Sam leaves/arrives during work mode
+  What: Controls study lights based on Sam's presence.
+  When: Triggered when input_boolean.sam_home changes during work mode.
+  Why: Saves energy by turning off study lights when Sam leaves, and automatically restores work scene when returning.
 mode: queued
 trace:
   stored_traces: 25

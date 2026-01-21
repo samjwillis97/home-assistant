@@ -1,7 +1,11 @@
 ---
 id: "house_apply_mode_scenes"
 alias: "House: Apply Mode Scenes"
-description: "Automatically activate scenes when house mode changes"
+description: >-
+  What: Activates room scenes when house mode changes.
+  When: Triggered whenever input_select.house_mode state changes.
+  Why: Automatically adjusts lighting and devices across all rooms to match the current mode (work, sleep, away, bedtime).
+  Supports both always-active scenes and conditional scenes (e.g., study only if Sam is home).
 mode: queued
 trace:
   stored_traces: 25

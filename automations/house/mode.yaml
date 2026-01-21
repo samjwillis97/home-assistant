@@ -2,7 +2,10 @@
 id: "5a3d6a60-86ab-408b-b6db-c5a053281a34"
 alias: "House: Mode Control"
 description: >-
-  This is used to control the `input_select` for the state of the house, it can then be used by other automations to make decisions against.
+  What: Controls the house mode state (input_select.house_mode) using a priority-based system.
+  When: Triggered by time patterns, away mode boolean changes, end-of-day signal, and system events.
+  Why: Provides automated mode transitions based on time-of-day while protecting critical modes (away, sleep, bedtime) from inappropriate overrides.
+  See automations/house/README.md for full documentation.
 mode: queued
 trace:
   stored_traces: 25
@@ -24,11 +27,11 @@ triggers:
   - platform: time_pattern
     minutes: /30
 
-  - id: apple_tv_off
+  - id: end_of_day_signal
     platform: state
     entity_id:
-      - media_player.lounge_room
-    to: "off"
+      - input_boolean.end_of_day_signal
+    to: "on"
 
   - id: house_away_turned_on
     platform: state
@@ -79,23 +82,35 @@ variables:
 
     - &wake_up_time_conditions
       or:
-        - alias: "Time 0600 -> 0800 Weekdays"
-          condition: time
-          after: "06:00:00"
-          before: "08:00:00"
-          weekday:
-            - mon
-            - tue
-            - wed
-            - thu
-            - fri
-        - alias: "Time 0700 -> 0900 Weekends"
-          condition: time
-          after: "07:00:00"
-          before: "09:00:00"
-          weekday:
-            - sat
-            - sun
+        - alias: "Wake-up time Weekdays"
+          condition: and
+          conditions:
+            - condition: template
+              value_template: >-
+                {% set current_time = now().strftime('%H:%M:%S') %}
+                {% set start_time = states('input_datetime.wake_up_weekday_start') %}
+                {% set end_time = states('input_datetime.wake_up_weekday_end') %}
+                {{ start_time <= current_time < end_time }}
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+        - alias: "Wake-up time Weekends"
+          condition: and
+          conditions:
+            - condition: template
+              value_template: >-
+                {% set current_time = now().strftime('%H:%M:%S') %}
+                {% set start_time = states('input_datetime.wake_up_weekend_start') %}
+                {% set end_time = states('input_datetime.wake_up_weekend_end') %}
+                {{ start_time <= current_time < end_time }}
+            - condition: time
+              weekday:
+                - sat
+                - sun
 
     - &turn_on_relaxation_mode
       service: input_select.select_option
@@ -180,30 +195,36 @@ action:
                   state: "sleep"
         sequence: []
 
-      # Bedtime mode turned on when apple TV turned off at night
+      # Bedtime mode turned on when end-of-day signal received
       - alias: "Turn on Bedtime house mode"
         conditions:
-          - alias: "Time 2100 -> 0300"
-            condition: time
-            after: "21:00:00"
-            before: "00:00:00"
-          - alias: "Apple TV turned off"
+          - alias: "Within bedtime window"
+            condition: template
+            value_template: >-
+              {% set current_time = now().strftime('%H:%M:%S') %}
+              {% set start_time = states('input_datetime.bedtime_window_start') %}
+              {% set end_time = states('input_datetime.bedtime_window_end') %}
+              {{ start_time <= current_time or current_time < end_time }}
+          - alias: "End of day signal received"
             condition: trigger
-            id: apple_tv_off
+            id: end_of_day_signal
         sequence:
           <<: *turn_on_bedtime_mode
 
-      # Transition from bedtime to sleep mode after 02:00
+      # Transition from bedtime to sleep mode
       - alias: "Bedtime to Sleep transition"
         conditions:
           - alias: "Currently in bedtime mode"
             condition: state
             entity_id: input_select.house_mode
             state: "bedtime"
-          - alias: "Time after 0200"
-            condition: time
-            after: "02:00:00"
-            before: "07:00:00"
+          - alias: "Sleep time reached"
+            condition: template
+            value_template: >-
+              {% set current_time = now().strftime('%H:%M:%S') %}
+              {% set start_time = states('input_datetime.sleep_time_start') %}
+              {% set end_time = states('input_datetime.sleep_time_end') %}
+              {{ start_time <= current_time < end_time }}
         sequence:
           <<: *turn_on_sleep_mode
 
@@ -215,33 +236,47 @@ action:
       - alias: "Relaxation mode handling"
         conditions:
           - or:
-              - alias: "Time after 2000"
-                condition: time
-                after: "20:00:00"
-              - alias: "Time between 0000 -> 0200"
-                condition: time
-                after: "00:00:00"
-                before: "02:00:00"
+              - alias: "Relaxation time"
+                condition: template
+                value_template: >-
+                  {% set current_time = now().strftime('%H:%M:%S') %}
+                  {% set start_time = states('input_datetime.relaxation_time') %}
+                  {{ current_time >= start_time }}
+              - alias: "Time between midnight and sleep start"
+                condition: template
+                value_template: >-
+                  {% set current_time = now().strftime('%H:%M:%S') %}
+                  {% set end_time = states('input_datetime.sleep_time_start') %}
+                  {{ '00:00:00' <= current_time < end_time }}
         sequence:
           <<: *turn_on_relaxation_mode
 
       - alias: "Dinner mode handling"
         conditions:
-          - alias: "Time after 1800"
-            condition: time
-            after: "18:00:00"
+          - alias: "Dinner time"
+            condition: template
+            value_template: >-
+              {% set current_time = now().strftime('%H:%M:%S') %}
+              {% set start_time = states('input_datetime.dinner_time') %}
+              {{ current_time >= start_time }}
         sequence:
           <<: *turn_on_dinner_mode
 
       - alias: "Default mode handling"
         conditions:
-          - alias: "Time 0900 -> 1800 Weekends"
-            condition: time
-            after: "09:00:00"
-            before: "18:00:00"
-            weekday:
-              - sat
-              - sun
+          - alias: "Default hours Weekends"
+            condition: and
+            conditions:
+              - condition: template
+                value_template: >-
+                  {% set current_time = now().strftime('%H:%M:%S') %}
+                  {% set start_time = states('input_datetime.default_weekend_start') %}
+                  {% set end_time = states('input_datetime.default_weekend_end') %}
+                  {{ start_time <= current_time < end_time }}
+              - condition: time
+                weekday:
+                  - sat
+                  - sun
         sequence:
           <<: *turn_on_default_mode
 
@@ -251,16 +286,22 @@ action:
             condition: state
             entity_id: input_boolean.holidays
             state: "off"
-          - alias: "Time 0800 -> 1700 Weekdays"
-            condition: time
-            after: "08:00:00"
-            before: "17:00:00"
-            weekday:
-              - mon
-              - tue
-              - wed
-              - thu
-              - fri
+          - alias: "Work hours Weekdays"
+            condition: and
+            conditions:
+              - condition: template
+                value_template: >-
+                  {% set current_time = now().strftime('%H:%M:%S') %}
+                  {% set start_time = states('input_datetime.work_start') %}
+                  {% set end_time = states('input_datetime.work_end') %}
+                  {{ start_time <= current_time < end_time }}
+              - condition: time
+                weekday:
+                  - mon
+                  - tue
+                  - wed
+                  - thu
+                  - fri
         sequence:
           <<: *turn_on_work_mode
 
@@ -270,13 +311,16 @@ action:
         sequence:
           <<: *turn_on_wakeup_mode
 
-      # Always sleep mode after 2AM before 7AM
+      # Always sleep mode during sleep hours
       - alias: "Sleep mode handling"
         conditions:
-          - alias: "Time after 0200 if it reaches this point"
-            condition: time
-            after: "02:00:00"
-            before: "07:00:00"
+          - alias: "Sleep time window"
+            condition: template
+            value_template: >-
+              {% set current_time = now().strftime('%H:%M:%S') %}
+              {% set start_time = states('input_datetime.sleep_time_start') %}
+              {% set end_time = states('input_datetime.sleep_time_end') %}
+              {{ start_time <= current_time < end_time }}
         sequence:
           <<: *turn_on_sleep_mode
 

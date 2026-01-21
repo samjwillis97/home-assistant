@@ -1,6 +1,10 @@
 ---
 id: "5ab5f017-59db-4c84-a097-0bfc848cee96"
 alias: "Bedroom: Scene Button"
+description: >-
+  What: Controls bedroom scenes and sleep mode via ZHA scene button.
+  When: Triggered by on/off button presses from bedroom scene switch.
+  Why: ON button activates mode-appropriate scene, OFF button forces sleep mode as manual bedtime override.
 mode: queued
 trace:
   stored_traces: 25
