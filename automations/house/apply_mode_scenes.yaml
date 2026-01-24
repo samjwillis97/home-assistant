@@ -24,8 +24,6 @@ variables:
           condition: input_boolean.maddy_home
         - scene: scene.study_work
           condition: input_boolean.sam_home
-        - scene: scene.kitchen_work
-          condition: input_boolean.maddy_home
     sleep:
       always:
         - scene.living_room_sleep
