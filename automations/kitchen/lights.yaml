@@ -1,0 +1,89 @@
+---
+id: "kitchen_lights_automation"
+alias: "Kitchen: Lights"
+description: >-
+  Controls the kitchen lights.
+
+  When motion is detected and the light level is low it will turn them on.
+
+  It will then turn them off once the room has been cleared for 30 minutes.
+
+  Note: Requires motion sensor to be configured (binary_sensor.kitchen_motion_sensor_motion,
+  binary_sensor.kitchen_motion_sensor_occupancy, sensor.kitchen_motion_sensor_illuminance).
+mode: queued
+trace:
+  stored_traces: 25
+
+triggers:
+  - platform: homeassistant
+    event: start
+
+  - platform: event
+    event_type:
+      - automation_reloaded
+
+  - trigger: state
+    id: "motion-detected"
+    entity_id: binary_sensor.kitchen_motion_sensor_motion
+    to: "on"
+
+  - trigger: state
+    entity_id: binary_sensor.kitchen_motion_sensor_occupancy
+    from: ~
+
+  - trigger: state
+    id: "room-clear"
+    entity_id: binary_sensor.kitchen_motion_sensor_occupancy
+    to: "off"
+    for:
+      minutes: 30
+
+  - trigger: numeric_state
+    entity_id: sensor.kitchen_motion_sensor_illuminance
+    below: 25
+
+variables:
+  anchors:
+    - &turn_on
+      alias: "Turn on lights"
+      service: light.turn_on
+      target:
+        entity_id: light.kitchen_lights
+
+    - &turn_off
+      alias: "Turn off lights"
+      service: light.turn_off
+      target:
+        entity_id: light.kitchen_lights
+
+action:
+  - choose:
+      - alias: "Turn on when room occupied and low light level"
+        conditions:
+          - alias: "Motion detected or room occupied"
+            or:
+              - condition: trigger
+                id: "motion-detected"
+              - condition: state
+                entity_id: binary_sensor.kitchen_motion_sensor_occupancy
+                state: "on"
+          - condition: numeric_state
+            entity_id: sensor.kitchen_motion_sensor_illuminance
+            below: 25
+
+        sequence:
+          - *turn_on
+
+      - alias: "Turn off when room empty"
+        conditions:
+          - or:
+              - condition: trigger
+                id: "room-clear"
+              - condition: state
+                entity_id: binary_sensor.kitchen_motion_sensor_occupancy
+                state: "off"
+                for:
+                  minutes: 30
+
+        sequence:
+          - *turn_off

@@ -3,5 +3,7 @@ id: "2766f47e-8dee-4715-b89d-7a8018f33570"
 name: "Dining Room: Away"
 icon: mdi:shield-lock
 entities:
+  light.dining_room_lights:
+    state: "off"
   light.maddys_desk_lamp_light:
     state: "off"

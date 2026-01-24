@@ -24,12 +24,15 @@ variables:
           condition: input_boolean.maddy_home
         - scene: scene.study_work
           condition: input_boolean.sam_home
+        - scene: scene.kitchen_work
+          condition: input_boolean.maddy_home
     sleep:
       always:
         - scene.living_room_sleep
         - scene.study_sleep
         - scene.bedroom_sleep
         - scene.dining_room_sleep
+        - scene.kitchen_sleep
       conditional: []
     away:
       always:
@@ -37,6 +40,7 @@ variables:
         - scene.dining_room_away
         - scene.study_away
         - scene.bedroom_away
+        - scene.kitchen_away
       conditional: []
     bedtime:
       always:

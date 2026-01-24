@@ -3,6 +3,10 @@ id: "0b3d87f0-273f-497d-887e-2bf9227327b4"
 name: "Dining Room: Work"
 icon: mdi:briefcase
 entities:
+  light.dining_room_lights:
+    state: "on"
+    brightness: 214
+    color_temp_kelvin: 2518
   light.maddys_desk_lamp_light:
     state: "on"
     brightness: 176

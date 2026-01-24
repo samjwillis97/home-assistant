@@ -1,0 +1,7 @@
+---
+id: "kitchen_sleep_scene"
+name: "Kitchen: Sleep"
+icon: mdi:sleep
+entities:
+  light.kitchen_lights:
+    state: "off"
