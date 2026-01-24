@@ -20,8 +20,6 @@ variables:
     work:
       always: []
       conditional:
-        - scene: scene.dining_room_work
-          condition: input_boolean.maddy_home
         - scene: scene.study_work
           condition: input_boolean.sam_home
     sleep:
