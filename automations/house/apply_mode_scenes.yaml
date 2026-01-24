@@ -30,6 +30,7 @@ variables:
         - scene.study_sleep
         - scene.bedroom_sleep
         - scene.dining_room_sleep
+        - scene.kitchen_sleep
       conditional: []
     away:
       always:
@@ -37,6 +38,7 @@ variables:
         - scene.dining_room_away
         - scene.study_away
         - scene.bedroom_away
+        - scene.kitchen_away
       conditional: []
     bedtime:
       always:

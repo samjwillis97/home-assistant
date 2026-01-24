@@ -5,3 +5,5 @@ icon: mdi:shield-lock
 entities:
   light.maddys_desk_lamp_light:
     state: "off"
+  light.dining_room_lights:
+    state: "off"

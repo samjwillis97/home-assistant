@@ -1,0 +1,7 @@
+---
+id: "7b014e5e-987e-4474-93e7-9c7d02b1d21f"
+name: "Kitchen: Away"
+icon: mdi:shield-lock
+entities:
+  light.kitchen_lights:
+    state: "off"

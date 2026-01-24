@@ -1,0 +1,7 @@
+---
+id: "53f4d066-0ff2-4472-85f5-0334c4d75d4b"
+name: "Kitchen: Sleep"
+icon: mdi:sleep
+entities:
+  light.kitchen_lights:
+    state: "off"
