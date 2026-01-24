@@ -5,5 +5,3 @@ icon: mdi:briefcase
 entities:
   light.kitchen_lights:
     state: "on"
-    brightness: 214
-    color_temp_kelvin: 2518

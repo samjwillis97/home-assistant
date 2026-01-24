@@ -5,8 +5,6 @@ icon: mdi:briefcase
 entities:
   light.dining_room_lights:
     state: "on"
-    brightness: 214
-    color_temp_kelvin: 2518
   light.maddys_desk_lamp_light:
     state: "on"
     brightness: 176
