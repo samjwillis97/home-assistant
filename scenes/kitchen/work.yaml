@@ -1,0 +1,7 @@
+---
+id: "kitchen_work_scene"
+name: "Kitchen: Work"
+icon: mdi:briefcase
+entities:
+  light.kitchen_lights:
+    state: "on"

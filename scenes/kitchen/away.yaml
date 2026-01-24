@@ -1,0 +1,7 @@
+---
+id: "kitchen_away_scene"
+name: "Kitchen: Away"
+icon: mdi:shield-lock
+entities:
+  light.kitchen_lights:
+    state: "off"
