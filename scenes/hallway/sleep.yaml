@@ -1,0 +1,7 @@
+---
+id: "8b81dc9f-b60b-4751-888e-29851ecad943"
+name: "Hallway: Sleep"
+icon: mdi:sleep
+entities:
+  light.hallway_lights:
+    state: "off"

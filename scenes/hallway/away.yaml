@@ -1,0 +1,7 @@
+---
+id: "b929de9c-2669-4c7a-8137-a53caa8a3ec3"
+name: "Hallway: Away"
+icon: mdi:shield-lock
+entities:
+  light.hallway_lights:
+    state: "off"
